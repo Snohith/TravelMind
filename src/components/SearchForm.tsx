@@ -48,16 +48,14 @@ export default function SearchForm() {
                 <MapPin className="w-3 h-3" /> From
                 <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${fromOpen ? 'rotate-180' : ''}`} />
               </label>
-              <input
-                type="text"
-                value={fromCity}
-                onChange={(e) => setFromCity(e.target.value)}
-                onFocus={() => { setFromOpen(true); setToOpen(false); setGuestsOpen(false); }}
-                onBlur={() => setTimeout(() => setFromOpen(false), 200)}
-                placeholder="Origin City"
-                className="block w-full text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none truncate leading-tight placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
-              />
-              <span className="text-xs font-medium text-zinc-400 mt-1">Where are you leaving from?</span>
+              <button
+                type="button"
+                onClick={() => { setFromOpen(!fromOpen); setToOpen(false); setGuestsOpen(false); }}
+                className="block w-full text-left text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none leading-tight truncate"
+              >
+                {fromCity || <span className="text-zinc-400">Origin City</span>}
+              </button>
+              <span className="text-xs font-medium text-zinc-400 mt-1">Indian Locations</span>
             </div>
 
             <AnimatePresence>
@@ -90,16 +88,14 @@ export default function SearchForm() {
                 <MapPin className="w-3 h-3" /> To
                 <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${toOpen ? 'rotate-180' : ''}`} />
               </label>
-              <input
-                type="text"
-                value={toCity}
-                onChange={(e) => setToCity(e.target.value)}
-                onFocus={() => { setToOpen(true); setFromOpen(false); setGuestsOpen(false); }}
-                onBlur={() => setTimeout(() => setToOpen(false), 200)}
-                placeholder="Destination City"
-                className="block w-full text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none truncate leading-tight placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
-              />
-              <span className="text-xs font-medium text-zinc-400 mt-1">Where do you want to go?</span>
+              <button
+                type="button"
+                onClick={() => { setToOpen(!toOpen); setFromOpen(false); setGuestsOpen(false); }}
+                className="block w-full text-left text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none leading-tight truncate"
+              >
+                {toCity || <span className="text-zinc-400">Destination City</span>}
+              </button>
+              <span className="text-xs font-medium text-zinc-400 mt-1">Indian Locations</span>
             </div>
 
             <AnimatePresence>
