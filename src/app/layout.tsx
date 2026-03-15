@@ -25,7 +25,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        {/* Tell Dark Reader the page is already dark so it won't inject inline styles */}
+        <meta name="color-scheme" content="dark" />
+      </head>
       <body
+        suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white min-h-screen overflow-x-hidden flex flex-col`}
       >
         <Navbar />

@@ -32,11 +32,11 @@ export default function SearchForm() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-      className="relative z-10 w-full max-w-5xl mx-auto mt-8 px-2 sm:px-0"
+      className="relative z-10 w-full max-w-5xl mx-auto mt-28 px-2 sm:px-0"
     >
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-zinc-950 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-visible"
+        className="relative bg-white dark:bg-zinc-950 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-visible"
       >
         {/* Fields Row — stacked on mobile, side-by-side on md+ */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-zinc-200 dark:divide-zinc-800">
