@@ -6,7 +6,7 @@ import { Spotlight } from "./ui/Spotlight"; // We noticed this component exists
 
 export default function Hero() {
   return (
-    <div className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 flex flex-col items-center justify-center min-h-[90vh] sm:min-h-screen overflow-hidden bg-black/[0.96] antialiased bg-grid-white/[0.02]">
+    <div className="relative pt-24 pb-16 md:pt-36 md:pb-24 flex flex-col items-center justify-center min-h-[100dvh] overflow-hidden bg-black/[0.96] antialiased bg-grid-white/[0.02]">
       
       {/* Dynamic Background Effects */}
       <Spotlight
@@ -28,7 +28,7 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <span className="inline-block py-1 px-3 mb-6 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-sm sm:text-base text-zinc-300 font-medium">
+            <span className="inline-block py-1 px-3 mb-4 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-xs sm:text-sm text-zinc-300 font-medium">
               ✨ Discover Your Next Adventure
             </span>
           </motion.div>
@@ -37,9 +37,9 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-            className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tight mb-6 leading-[1.1]"
+            className="text-5xl sm:text-7xl md:text-9xl font-black tracking-tight mb-4 leading-[1.05]"
           >
-            <span className="text-white block pb-2">
+            <span className="text-white block pb-1">
               TravelMind
             </span>
           </motion.h1>
@@ -48,7 +48,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            className="text-xl sm:text-2xl md:text-3xl text-zinc-300 font-medium max-w-3xl mx-auto"
+            className="text-base sm:text-xl md:text-2xl text-zinc-300 font-medium max-w-2xl mx-auto px-4"
           >
             Your Journey Intelligently Travelled
           </motion.p>
@@ -61,12 +61,12 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 1 }}
-          className="mt-20 sm:mt-28 flex flex-col items-center justify-center text-zinc-500"
+          className="mt-16 sm:mt-24 flex flex-col items-center justify-center text-zinc-500"
         >
-          <span className="text-sm font-medium mb-4 uppercase tracking-widest text-zinc-600">Popular Destinations</span>
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
+          <span className="text-xs font-medium mb-3 uppercase tracking-widest text-zinc-600">Popular Destinations</span>
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 px-4">
             {['Hyderabad', 'Warangal', 'Vizag', 'Mumbai', 'Bangalore'].map((dest, i) => (
-              <span key={i} className="text-sm sm:text-base font-semibold text-zinc-400 hover:text-white transition-colors cursor-pointer">
+              <span key={i} className="text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white transition-colors cursor-pointer">
                 {dest}
               </span>
             ))}

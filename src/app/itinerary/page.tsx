@@ -30,7 +30,7 @@ function ItineraryContent() {
   return (
     <>
       {/* Sidebar Timeline - Left Column */}
-      <div className="w-full md:w-5/12 lg:w-1/3 h-[60vh] md:h-full overflow-y-auto border-b md:border-b-0 md:border-r border-white/5 shrink-0 custom-scrollbar z-20 shadow-2xl bg-neutral-950">
+      <div className="w-full md:w-5/12 lg:w-[38%] h-[55vh] md:h-full overflow-y-auto border-b md:border-b-0 md:border-r border-white/5 shrink-0 custom-scrollbar z-20 shadow-2xl bg-neutral-950">
         <Timeline 
           itinerary={trip.days} 
           activeDayId={activeDayId} 
@@ -41,7 +41,7 @@ function ItineraryContent() {
       </div>
       
       {/* Main Map Area - Right Column */}
-      <div className="w-full md:w-7/12 lg:w-2/3 h-[40vh] md:h-full relative bg-[#050505] overflow-hidden z-10">
+      <div className="w-full md:w-7/12 lg:w-[62%] h-[45vh] md:h-full relative bg-[#050505] overflow-hidden z-10">
         <InteractiveMap 
           itinerary={trip.days}
           activeDayId={activeDayId} 
@@ -56,7 +56,7 @@ function ItineraryContent() {
 
 export default function ItineraryDashboard() {
   return (
-    <div className="flex flex-col md:flex-row w-full h-[100dvh] pt-[72px] bg-neutral-950 text-white overflow-hidden font-sans">
+    <div className="flex flex-col md:flex-row w-full min-h-[100dvh] pt-[64px] bg-neutral-950 text-white overflow-hidden font-sans">
       <Suspense fallback={
         <div className="w-full h-full flex flex-col items-center justify-center bg-[#050505] text-emerald-500 gap-4">
           <div className="w-8 h-8 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin" />

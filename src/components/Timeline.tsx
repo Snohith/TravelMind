@@ -42,12 +42,12 @@ export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripT
   }, [activeDayId]);
 
   return (
-    <div className="min-h-full bg-neutral-950 p-6 md:p-8 relative" ref={containerRef}>
-      <div className="mb-8 sticky top-0 bg-neutral-950/90 backdrop-blur-xl z-30 py-4 -mt-4 border-b border-white/5">
-        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
+    <div className="min-h-full bg-neutral-950 p-4 md:p-8 relative" ref={containerRef}>
+      <div className="mb-6 sticky top-0 bg-neutral-950/90 backdrop-blur-xl z-30 py-3 -mt-4 border-b border-white/5">
+        <h1 className="text-lg sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400 leading-tight">
           {tripTitle || "Your Itinerary"}
         </h1>
-        <p className="text-sm text-neutral-500 mt-1">Review your personalized journey day by day.</p>
+        <p className="text-xs text-neutral-500 mt-0.5">Review your personalized journey day by day.</p>
       </div>
 
       <div className="relative border-l border-white/10 ml-4 md:ml-6 pb-20">
@@ -59,7 +59,7 @@ export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripT
               key={day.id} 
               data-day-id={day.id}
               className={cn(
-                "mb-12 relative pl-8 md:pl-10 transition-all duration-500 cursor-pointer group",
+                "mb-10 relative pl-7 md:pl-10 transition-all duration-500 cursor-pointer group",
                 isActive ? "opacity-100" : "opacity-50 hover:opacity-80"
               )}
               onClick={() => setActiveDayId(day.id)}
@@ -75,8 +75,8 @@ export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripT
               </div>
 
               {/* Day Header Context */}
-              <div className="mb-6">
-                <div className="flex items-center gap-3 mb-1">
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-1">
                   <span className={cn(
                     "text-[10px] font-bold tracking-[0.2em] uppercase transition-colors duration-300",
                     isActive ? "text-emerald-400" : "text-neutral-500"
@@ -87,12 +87,12 @@ export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripT
                   <span className="text-xs text-neutral-500 font-medium">{day.date}</span>
                 </div>
                 <h2 className={cn(
-                  "text-2xl font-bold transition-colors duration-300 mt-1",
+                  "text-lg sm:text-2xl font-bold transition-colors duration-300 mt-1 leading-tight",
                   isActive ? "text-white" : "text-neutral-300"
                 )}>
                   {day.title}
                 </h2>
-                <p className="text-sm text-neutral-400 mt-3 leading-relaxed max-w-lg">
+                <p className="text-xs sm:text-sm text-neutral-400 mt-2 leading-relaxed">
                   {day.description}
                 </p>
               </div>

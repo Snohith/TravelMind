@@ -46,15 +46,15 @@ const steps = [
 export default function HowToUse() {
   return (
     <section className="w-full max-w-6xl mx-auto mt-24 sm:mt-32 mb-16 px-4" id="how-to-use">
-      <div className="text-center mb-12 sm:mb-16">
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">How To Use TravelMind?</h2>
+      <div className="text-center mb-10 sm:mb-16">
+        <h2 className="text-xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">How To Use TravelMind?</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {steps.map((step) => (
           <div 
             key={step.num}
-            className="relative flex flex-col items-center text-center p-8 sm:p-10 rounded-2xl border border-white/5 bg-[#0a0a0a] overflow-hidden hover:border-white/10 transition-colors group"
+            className="relative flex flex-col items-center text-center p-6 sm:p-10 rounded-2xl border border-white/5 bg-[#0a0a0a] overflow-hidden hover:border-white/10 transition-colors group"
           >
             {/* Soft gradient from top to bottom on hover */}
             <div className={`absolute inset-0 bg-gradient-to-b ${step.color} to-transparent opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none`} />
@@ -80,7 +80,7 @@ export default function HowToUse() {
             </div>
 
             {/* Content */}
-            <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 relative z-10">{step.title}</h3>
+            <h3 className="text-base sm:text-xl font-bold text-white mb-2 sm:mb-4 relative z-10">{step.title}</h3>
             <p className="text-sm text-zinc-400 font-medium leading-relaxed relative z-10">
               {step.desc}
             </p>

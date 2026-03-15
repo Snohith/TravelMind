@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, MapPin, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function SearchForm() {
@@ -10,13 +10,11 @@ export default function SearchForm() {
   const [fromCity, setFromCity] = useState("Bangalore");
   const [toCity, setToCity] = useState("Goa");
   
-  // Dropdown states
   const [fromOpen, setFromOpen] = useState(false);
   const [toOpen, setToOpen] = useState(false);
   
   const cities = ["Hyderabad", "Warangal", "Vizag", "Mumbai", "Bangalore", "Goa", "Delhi", "Chennai", "Kashmir", "Rajasthan"];
 
-  // Guests & Rooms state
   const [guestsOpen, setGuestsOpen] = useState(false);
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
@@ -25,12 +23,7 @@ export default function SearchForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!fromCity || !toCity) return;
-    
-    const params = new URLSearchParams({
-       from: fromCity,
-       to: toCity,
-    });
-    
+    const params = new URLSearchParams({ from: fromCity, to: toCity });
     router.push(`/itinerary?${params.toString()}`);
   };
 
@@ -39,46 +32,48 @@ export default function SearchForm() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-      className="relative z-10 w-full max-w-5xl mx-auto mt-8"
+      className="relative z-10 w-full max-w-5xl mx-auto mt-8 px-2 sm:px-0"
     >
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-zinc-950 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 pt-3 pb-8 sm:pb-12 relative"
+        className="bg-white dark:bg-zinc-950 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-visible"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-zinc-200 dark:divide-zinc-800">
+        {/* Fields Row — stacked on mobile, side-by-side on md+ */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-zinc-200 dark:divide-zinc-800">
           
           {/* From City */}
-          <div className="relative group">
-            <div className="w-full relative px-5 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors h-full flex flex-col justify-center">
-              <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-1 flex items-center gap-1 cursor-text pointer-events-none">
-                From City <ChevronDown className={`w-3 h-3 transition-transform ${fromOpen ? 'rotate-180' : ''}`} />
+          <div className="relative">
+            <div className="w-full px-4 py-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors flex flex-col justify-center">
+              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                <MapPin className="w-3 h-3" /> From
+                <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${fromOpen ? 'rotate-180' : ''}`} />
               </label>
-              <input 
+              <input
                 type="text"
                 value={fromCity}
                 onChange={(e) => setFromCity(e.target.value)}
                 onFocus={() => { setFromOpen(true); setToOpen(false); setGuestsOpen(false); }}
                 onBlur={() => setTimeout(() => setFromOpen(false), 200)}
-                placeholder="Origin"
-                className="block w-full text-3xl font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none truncate leading-none mb-1 placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
+                placeholder="Origin City"
+                className="block w-full text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none truncate leading-tight placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
               />
-              <span className="text-sm font-medium text-zinc-500 block truncate pointer-events-none">Global Locations</span>
+              <span className="text-xs font-medium text-zinc-400 mt-1">Where are you leaving from?</span>
             </div>
-            
+
             <AnimatePresence>
               {fromOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-0 mt-2 w-[280px] sm:w-72 max-h-64 overflow-y-auto bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 p-2 z-[60] custom-scrollbar"
+                  exit={{ opacity: 0, y: 8 }}
+                  className="absolute top-full left-0 right-0 sm:left-0 sm:right-auto sm:w-72 mt-1 max-h-56 overflow-y-auto bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 p-2 z-[60]"
                 >
                   {cities.map((city) => (
                     <button
                       key={city}
                       type="button"
                       onClick={() => { setFromCity(city); setFromOpen(false); }}
-                      className="w-full text-left px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl font-medium text-zinc-900 dark:text-zinc-100 transition-colors"
+                      className="w-full text-left px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl font-medium text-zinc-900 dark:text-zinc-100 transition-colors text-sm"
                     >
                       {city}
                     </button>
@@ -89,38 +84,39 @@ export default function SearchForm() {
           </div>
 
           {/* To City */}
-          <div className="relative group">
-            <div className="w-full relative px-5 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors h-full flex flex-col justify-center">
-              <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-1 flex items-center gap-1 cursor-text pointer-events-none">
-                To City <ChevronDown className={`w-3 h-3 transition-transform ${toOpen ? 'rotate-180' : ''}`} />
+          <div className="relative">
+            <div className="w-full px-4 py-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors flex flex-col justify-center">
+              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                <MapPin className="w-3 h-3" /> To
+                <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${toOpen ? 'rotate-180' : ''}`} />
               </label>
-              <input 
+              <input
                 type="text"
                 value={toCity}
                 onChange={(e) => setToCity(e.target.value)}
                 onFocus={() => { setToOpen(true); setFromOpen(false); setGuestsOpen(false); }}
                 onBlur={() => setTimeout(() => setToOpen(false), 200)}
-                placeholder="Destination"
-                className="block w-full text-3xl font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none truncate leading-none mb-1 placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
+                placeholder="Destination City"
+                className="block w-full text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none truncate leading-tight placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
               />
-              <span className="text-sm font-medium text-zinc-500 block truncate pointer-events-none">Global Locations</span>
+              <span className="text-xs font-medium text-zinc-400 mt-1">Where do you want to go?</span>
             </div>
 
             <AnimatePresence>
               {toOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-0 mt-2 w-[280px] sm:w-72 max-h-64 overflow-y-auto bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 p-2 z-[60] custom-scrollbar"
+                  exit={{ opacity: 0, y: 8 }}
+                  className="absolute top-full left-0 right-0 sm:left-0 sm:right-auto sm:w-72 mt-1 max-h-56 overflow-y-auto bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 p-2 z-[60]"
                 >
                   {cities.map((city) => (
                     <button
                       key={city}
                       type="button"
                       onClick={() => { setToCity(city); setToOpen(false); }}
-                      className={`w-full text-left px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl font-medium transition-colors ${fromCity === city ? 'opacity-50 cursor-not-allowed text-zinc-400' : 'text-zinc-900 dark:text-zinc-100'}`}
                       disabled={fromCity === city}
+                      className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-colors text-sm ${fromCity === city ? 'opacity-40 cursor-not-allowed text-zinc-400' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100'}`}
                     >
                       {city} {fromCity === city && "(Origin)"}
                     </button>
@@ -130,73 +126,54 @@ export default function SearchForm() {
             </AnimatePresence>
           </div>
 
-
-          {/* Rooms & Guests */}
-          <div className="relative group">
+          {/* Guests & Rooms */}
+          <div className="relative sm:col-span-2 md:col-span-1">
             <button
               type="button"
               onClick={() => { setGuestsOpen(!guestsOpen); setFromOpen(false); setToOpen(false); }}
-              className="w-full text-left px-5 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors h-full flex flex-col justify-center"
+              className="w-full text-left px-4 py-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors flex flex-col justify-center"
             >
-              <label className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-1 flex items-center gap-1 cursor-pointer">
-                Rooms & Guests <ChevronDown className={`w-3 h-3 transition-transform ${guestsOpen ? 'rotate-180' : ''}`} />
+              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5 flex items-center gap-1 pointer-events-none">
+                <Users className="w-3 h-3" /> Guests
+                <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${guestsOpen ? 'rotate-180' : ''}`} />
               </label>
-              <div className="flex items-baseline gap-1 leading-none mb-1">
-                <span className="text-3xl font-black text-zinc-900 dark:text-zinc-100">{adults + children}</span>
-                <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Travelers</span>
+              <div className="flex items-baseline gap-1.5 leading-tight">
+                <span className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100">{adults + children}</span>
+                <span className="text-base font-bold text-zinc-900 dark:text-zinc-100">Travelers</span>
               </div>
-              <span className="text-sm font-medium text-zinc-500 block truncate">{rooms} Room</span>
+              <span className="text-xs font-medium text-zinc-400 mt-1">{rooms} Room{rooms > 1 ? 's' : ''}</span>
             </button>
 
-            {/* Guests Dropdown */}
             <AnimatePresence>
               {guestsOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-auto sm:right-0 mt-2 w-[300px] sm:w-80 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 p-4 sm:p-5 z-[60]"
+                  exit={{ opacity: 0, y: 8 }}
+                  className="absolute top-full left-0 right-0 sm:right-0 sm:left-auto sm:w-80 mt-1 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 p-4 z-[60]"
                 >
-                  <div className="space-y-5">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-bold text-zinc-900 dark:text-zinc-100">Rooms</p>
+                  <div className="space-y-4">
+                    {[
+                      { label: "Rooms", sub: null, value: rooms, setter: setRooms, min: 1 },
+                      { label: "Adults", sub: "> 12 Years", value: adults, setter: setAdults, min: 1 },
+                      { label: "Children", sub: "2 – 12 Years", value: children, setter: setChildren, min: 0 },
+                    ].map((item) => (
+                      <div key={item.label} className="flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{item.label}</p>
+                          {item.sub && <p className="text-xs text-zinc-500">{item.sub}</p>}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button type="button" onClick={() => item.setter(Math.max(item.min, item.value - 1))} className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-lg leading-none">−</button>
+                          <span className="w-5 text-center font-bold text-zinc-900 dark:text-zinc-100">{item.value}</span>
+                          <button type="button" onClick={() => item.setter(item.value + 1)} className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-lg leading-none">+</button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <button type="button" onClick={() => setRooms(Math.max(1, rooms - 1))} className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800">-</button>
-                        <span className="w-4 text-center font-bold">{rooms}</span>
-                        <button type="button" onClick={() => setRooms(rooms + 1)} className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800">+</button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-bold text-zinc-900 dark:text-zinc-100">Adults</p>
-                        <p className="text-xs font-medium text-zinc-500">&gt; 12 Years</p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <button type="button" onClick={() => setAdults(Math.max(1, adults - 1))} className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800">-</button>
-                        <span className="w-4 text-center font-bold">{adults}</span>
-                        <button type="button" onClick={() => setAdults(adults + 1)} className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800">+</button>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-bold text-zinc-900 dark:text-zinc-100">Children</p>
-                        <p className="text-xs font-medium text-zinc-500">2 - 12 Years</p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <button type="button" onClick={() => setChildren(Math.max(0, children - 1))} className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800">-</button>
-                        <span className="w-4 text-center font-bold">{children}</span>
-                        <button type="button" onClick={() => setChildren(children + 1)} className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800">+</button>
-                      </div>
-                    </div>
-
-                    <button 
-                      type="button" 
+                    ))}
+                    <button
+                      type="button"
                       onClick={() => setGuestsOpen(false)}
-                      className="w-full py-3 mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all uppercase tracking-wide"
+                      className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-sm shadow-lg transition-all uppercase tracking-wide"
                     >
                       Apply
                     </button>
@@ -207,13 +184,13 @@ export default function SearchForm() {
           </div>
         </div>
 
-        {/* Search Button positioned Absolute like MMT */}
-        <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 z-20">
+        {/* Search Button — inline on mobile, absolute on md+ */}
+        <div className="px-4 py-4 md:py-0 md:absolute md:-bottom-7 md:left-1/2 md:-translate-x-1/2 md:z-20">
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             type="submit"
-            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full py-3 sm:py-4 px-12 sm:px-16 text-lg sm:text-xl font-bold shadow-xl transition-all uppercase tracking-widest"
+            className="w-full md:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full py-3 md:py-4 px-10 md:px-16 text-base md:text-xl font-bold shadow-xl transition-all uppercase tracking-widest"
           >
             Search
           </motion.button>
