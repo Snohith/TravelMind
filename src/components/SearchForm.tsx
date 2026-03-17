@@ -180,13 +180,13 @@ export default function SearchForm() {
           </div>
         </div>
 
-        {/* Search Button — inline on mobile, absolute on md+ */}
-        <div className="px-4 py-4 md:py-0 md:absolute md:-bottom-7 md:left-1/2 md:-translate-x-1/2 md:z-20">
+        {/* Search Button — always centered below the fields, never overlapping */}
+        <div className="flex items-center justify-center px-4 py-4 border-t border-zinc-200 dark:border-zinc-800">
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             type="submit"
-            className="w-full md:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full py-3 md:py-4 px-10 md:px-16 text-base md:text-xl font-bold shadow-xl transition-all uppercase tracking-widest"
+            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full py-3 px-16 text-base md:text-xl font-bold shadow-xl transition-all uppercase tracking-widest"
           >
             Search
           </motion.button>

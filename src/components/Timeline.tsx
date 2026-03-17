@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { ItineraryDay, Activity } from "@/data/mock-itinerary";
 import { motion } from "framer-motion";
-import { Utensils, Camera, Train, MapPin, Bed } from "lucide-react";
+import { Utensils, Camera, Train, MapPin, Bed, IndianRupee } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TimelineProps {
@@ -11,6 +11,7 @@ interface TimelineProps {
   activeDayId: string;
   setActiveDayId: (id: string) => void;
   tripTitle?: string;
+  totalPriceINR?: number;
   onActivityClick?: (location: { lat: number; lng: number }) => void;
 }
 
@@ -25,7 +26,16 @@ const getActivityIcon = (type: Activity['type']) => {
   }
 };
 
-export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripTitle, onActivityClick }: TimelineProps) {
+function formatINR(amount: number): string {
+  if (amount === 0) return "Free";
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripTitle, totalPriceINR, onActivityClick }: TimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Auto-scroll the timeline to the active day
@@ -50,7 +60,7 @@ export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripT
         <p className="text-xs text-neutral-500 mt-0.5">Review your personalized journey day by day.</p>
       </div>
 
-      <div className="relative border-l border-white/10 ml-4 md:ml-6 pb-20">
+      <div className="relative border-l border-white/10 ml-4 md:ml-6 pb-4">
         {itinerary.map((day) => {
           const isActive = day.id === activeDayId;
           
@@ -135,7 +145,7 @@ export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripT
                         {activity.time}
                       </span>
                       <div className="flex-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h4 className={cn(
                             "text-sm font-semibold mb-1 transition-colors duration-300",
                             isActive ? "text-neutral-100" : "text-neutral-400"
@@ -151,6 +161,18 @@ export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripT
                         <p className="text-[13px] text-neutral-500 leading-relaxed">
                           {activity.description}
                         </p>
+                        {/* INR Price Badge */}
+                        {activity.priceINR !== undefined && (
+                          <div className={cn(
+                            "inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-[11px] font-semibold",
+                            activity.priceINR === 0
+                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                              : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                          )}>
+                            <IndianRupee className="w-2.5 h-2.5" />
+                            {formatINR(activity.priceINR)}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -160,6 +182,40 @@ export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripT
           );
         })}
       </div>
+
+      {/* Trip Cost Summary */}
+      {totalPriceINR !== undefined && (
+        <div className="mx-4 md:mx-6 mb-6 p-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.04] backdrop-blur-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-400/70 mb-1">
+                Total Estimated Cost
+              </p>
+              <div className="flex items-center gap-1.5">
+                <IndianRupee className="w-5 h-5 text-emerald-400" />
+                <span className="text-2xl font-black text-white">
+                  {new Intl.NumberFormat('en-IN').format(totalPriceINR)}
+                </span>
+              </div>
+              <p className="text-[11px] text-neutral-500 mt-1">
+                For 5 days · 2 adults · Flights + Stay + Activities
+              </p>
+            </div>
+            <div className="text-right hidden sm:block">
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] text-neutral-500 flex items-center justify-end gap-1">
+                  <span className="w-2 h-2 rounded-full bg-amber-400/50 inline-block" />
+                  Paid activities
+                </span>
+                <span className="text-[10px] text-emerald-400 flex items-center justify-end gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400/50 inline-block" />
+                  Free experiences
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

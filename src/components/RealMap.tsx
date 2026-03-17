@@ -70,6 +70,19 @@ function MapUpdater({ activeDay, focusedLocation }: MapUpdaterProps) {
   return null;
 }
 
+// Forces Leaflet to recalculate its container size after mount.
+// Necessary when the map renders inside a flex/grid container
+// whose dimensions are resolved via CSS after the initial render.
+function MapInvalidator() {
+  const map = useMap();
+  useEffect(() => {
+    // Small delay ensures the CSS layout has been fully applied
+    const timer = setTimeout(() => { map.invalidateSize(); }, 100);
+    return () => clearTimeout(timer);
+  }, [map]);
+  return null;
+}
+
 interface RealMapProps {
   itinerary: ItineraryDay[];
   activeDayId: string;
@@ -93,9 +106,15 @@ export default function RealMap({ itinerary, activeDayId, setActiveDayId, focuse
     popupAnchor: [0, -22],
   }), []);
 
+  // Use the first day's coordinates as a stable key — if the destination changes,
+  // this forces MapContainer to fully unmount + remount (Leaflet ignores `center`
+  // after the initial render, so a new key is the only reliable reset approach).
+  const mapKey = `${itinerary[0]?.location.lat}-${itinerary[0]?.location.lng}`;
+
   return (
     <div className="w-full h-full relative z-0">
       <MapContainer 
+        key={mapKey}
         center={[activeDay.location.lat, activeDay.location.lng]} 
         zoom={13} 
         style={{ height: "100%", width: "100%", zIndex: 0 }}
@@ -104,12 +123,13 @@ export default function RealMap({ itinerary, activeDayId, setActiveDayId, focuse
         {/* Sleek Dark Mode CartoDB Map Tiles */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           subdomains="abcd"
           maxZoom={20}
         />
         
         <MapUpdater activeDay={activeDay} focusedLocation={focusedLocation} />
+        <MapInvalidator />
 
         {/* Focused activity pin - shown when user clicks a specific activity */}
         {focusedLocation && (
@@ -162,7 +182,7 @@ export default function RealMap({ itinerary, activeDayId, setActiveDayId, focuse
 
 
       {/* Global overrides for leaflet defaults */}
-      <style jsx global>{`
+      <style>{`
         .leaflet-container {
           background-color: #050505 !important;
           outline: none;

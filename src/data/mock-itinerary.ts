@@ -5,6 +5,7 @@ export interface Activity {
   description: string;
   type: 'dining' | 'sightseeing' | 'transit' | 'accommodation' | 'activity';
   location?: { lat: number; lng: number }; // Optional per-activity pin
+  priceINR?: number; // Estimated cost in Indian Rupees
 }
 
 export interface ItineraryDay {
@@ -24,6 +25,7 @@ export interface Trip {
   title: string;
   duration: number;
   days: ItineraryDay[];
+  totalPriceINR?: number;
 }
 
 // Helper to calculate next days based on a standard format
@@ -327,14 +329,16 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             title: transport,
             description: `Depart ${origin} and arrive in ${destination}.`,
             type: "transit",
-            location: originCoords, // Airport/station is in origin city
+            location: originCoords,
+            priceINR: 7500,
           },
           {
             id: "dy1b", time: "2:00 PM",
             title: "Hotel Check-in & Freshen Up",
             description: "Settle into your carefully selected accommodation.",
             type: "accommodation",
-            location: { lat: destCoords.lat + 0.005, lng: destCoords.lng - 0.005 }, // Near city center
+            location: { lat: destCoords.lat + 0.005, lng: destCoords.lng - 0.005 },
+            priceINR: 5000,
           },
           {
             id: "dy1c", time: "4:30 PM",
@@ -342,6 +346,7 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: landmarks[0].description,
             type: "sightseeing",
             location: landmarks[0].coords,
+            priceINR: 350,
           },
           {
             id: "dy1d", time: "8:00 PM",
@@ -349,6 +354,7 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: restaurants[0].description,
             type: "dining",
             location: { lat: landmarks[0].coords.lat + 0.003, lng: landmarks[0].coords.lng - 0.004 },
+            priceINR: 850,
           }
         ]
       },
@@ -366,6 +372,7 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: landmarks[1]?.description || `Explore the heart of ${destination}.`,
             type: "sightseeing",
             location: landmarks[1]?.coords,
+            priceINR: 500,
           },
           {
             id: "dy2b", time: "12:30 PM",
@@ -373,6 +380,7 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: restaurants[1]?.description || `Taste the local specialties of ${destination}.`,
             type: "dining",
             location: landmarks[1]?.coords ? { lat: landmarks[1].coords.lat + 0.003, lng: landmarks[1].coords.lng + 0.003 } : undefined,
+            priceINR: 700,
           },
           {
             id: "dy2c", time: "3:00 PM",
@@ -380,6 +388,7 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: landmarks[2]?.description || "Explore local culture and heritage.",
             type: "sightseeing",
             location: landmarks[2]?.coords,
+            priceINR: 400,
           },
           {
             id: "dy2d", time: "6:30 PM",
@@ -387,6 +396,7 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: activities[0]?.description || `Enjoy a popular local activity.`,
             type: "activity",
             location: landmarks[2]?.coords ? { lat: landmarks[2].coords.lat - 0.002, lng: landmarks[2].coords.lng + 0.002 } : undefined,
+            priceINR: 1200,
           }
         ]
       },
@@ -404,6 +414,7 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: landmarks[3]?.description || `Explore a lesser-known gem of ${destination}.`,
             type: "activity",
             location: landmarks[3]?.coords,
+            priceINR: 800,
           },
           {
             id: "dy3b", time: "1:00 PM",
@@ -411,6 +422,7 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: restaurants[2]?.description || "Taste authentic street food and snacks.",
             type: "dining",
             location: landmarks[3]?.coords ? { lat: landmarks[3].coords.lat + 0.004, lng: landmarks[3].coords.lng - 0.003 } : undefined,
+            priceINR: 600,
           },
           {
             id: "dy3c", time: "3:30 PM",
@@ -418,6 +430,7 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: landmarks[4]?.description || "A beautiful viewpoint or natural landmark.",
             type: "sightseeing",
             location: landmarks[4]?.coords,
+            priceINR: 300,
           },
           {
             id: "dy3d", time: "7:00 PM",
@@ -425,6 +438,7 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: `Enjoy local art, music, or a cultural performance in ${destination}.`,
             type: "activity",
             location: landmarks[4]?.coords ? { lat: landmarks[4].coords.lat - 0.003, lng: landmarks[4].coords.lng + 0.003 } : undefined,
+            priceINR: 1500,
           }
         ]
       },
@@ -442,6 +456,7 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: activities[1]?.description || `Browse the markets of ${destination} for unique souvenirs.`,
             type: "activity",
             location: { lat: destCoords.lat + 0.008, lng: destCoords.lng + 0.006 },
+            priceINR: 2500,
           },
           {
             id: "dy4b", time: "1:30 PM",
@@ -449,6 +464,7 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: `Discover award-winning local cafes and ${destination}'s coffee culture.`,
             type: "dining",
             location: { lat: destCoords.lat + 0.006, lng: destCoords.lng - 0.004 },
+            priceINR: 550,
           },
           {
             id: "dy4c", time: "5:00 PM",
@@ -456,6 +472,7 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: `Watch the sun set over ${destination} from a breathtaking vantage point.`,
             type: "sightseeing",
             location: { lat: destCoords.lat - 0.01, lng: destCoords.lng + 0.006 },
+            priceINR: 0,
           }
         ]
       },
@@ -473,6 +490,7 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: `Take one last slow walk through the streets of ${destination}.`,
             type: "activity",
             location: { lat: destCoords.lat + 0.003, lng: destCoords.lng - 0.007 },
+            priceINR: 0,
           },
           {
             id: "dy5b", time: "11:30 AM",
@@ -480,16 +498,19 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
             description: `One last authentic meal before leaving ${destination} behind.`,
             type: "dining",
             location: { lat: destCoords.lat - 0.006, lng: destCoords.lng + 0.004 },
+            priceINR: 1000,
           },
           {
             id: "dy5c", time: "3:00 PM",
             title: `Return to ${origin}`,
             description: `Head to the airport or station for your journey back to ${origin}.`,
             type: "transit",
-            location: originCoords, // Back to origin city
+            location: originCoords,
+            priceINR: 7500,
           }
         ]
       }
-    ]
+    ],
+    totalPriceINR: 7500 + 5000 + 350 + 850 + 500 + 700 + 400 + 1200 + 800 + 600 + 300 + 1500 + 2500 + 550 + 0 + 0 + 1000 + 7500,
   };
 };
