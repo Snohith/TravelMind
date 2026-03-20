@@ -81,27 +81,31 @@ export async function getTripById(tripId: string) {
  * SAFETY: We now pull the user.id directly from the server session, making it 
  * impossible for anyone to spoof another user's ID.
  */
-export async function getUserTrips() {
+export async function getUserTrips(page: number = 1, limit: number = 9) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     console.error("Attempted to fetch trips without a session.");
-    return [];
+    return { data: [], count: 0 };
   }
 
-  const { data, error } = await (supabase
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  const { data, count, error } = await (supabase
     .from('trips')
-    .select('*')
+    .select('*', { count: 'exact' })
     .eq('user_id', user.id)
-    .order('created_at', { ascending: false }) as any);
+    .order('created_at', { ascending: false })
+    .range(from, to) as any);
 
   if (error) {
     console.error("Error fetching user trips:", error);
-    return [];
+    return { data: [], count: 0 };
   }
 
-  return data as any[];
+  return { data: data as any[], count: count || 0 };
 }
 
 /**

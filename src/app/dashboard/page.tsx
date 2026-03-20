@@ -12,13 +12,19 @@ export default function DashboardPage() {
   const { user, isLoaded } = useAuth();
   const [trips, setTrips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const limit = 9;
 
   useEffect(() => {
     async function fetchTrips() {
       if (user) {
         setLoading(true);
-        const data = await getUserTrips();
+        const { data, count } = await getUserTrips(1, limit);
         setTrips(data);
+        setHasMore((data.length) < count);
+        setPage(2);
         setLoading(false);
       }
     }
@@ -40,6 +46,22 @@ export default function DashboardPage() {
     } catch (err) {
       console.error("Delete failed:", err);
       alert("Failed to delete trip. Please try again.");
+    }
+  }
+
+  async function loadMore() {
+    if (!hasMore || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const { data, count } = await getUserTrips(page, limit);
+      const newTrips = [...trips, ...data];
+      setTrips(newTrips);
+      setHasMore(newTrips.length < count);
+      setPage(p => p + 1);
+    } catch (err) {
+      console.error("Failed to load more:", err);
+    } finally {
+      setLoadingMore(false);
     }
   }
 
@@ -132,6 +154,20 @@ export default function DashboardPage() {
                 </div>
               </motion.div>
             ))}
+            
+            {hasMore && (
+              <div className="mt-12 flex justify-center w-full col-span-full">
+                <button
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="px-8 py-3 bg-neutral-900 border border-white/10 hover:border-emerald-500/50 hover:bg-neutral-800 rounded-full text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[160px]"
+                >
+                  {loadingMore ? (
+                    <div className="w-4 h-4 rounded-full border-2 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+                  ) : "Load More Trips"}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
