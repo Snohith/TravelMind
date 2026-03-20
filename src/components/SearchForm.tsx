@@ -5,8 +5,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, MapPin, Users, Sparkles, IndianRupee } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
-import { generateAndSaveTrip } from "@/app/actions/trips";
+import { BouncingDots } from "@/components/ui/Loader";
+import { Button } from "@/components/ui/button";
 
+/**
+ * The core search form component where users enter their trip preferences.
+ * 
+ * What it does: Displays a form for 'From', 'To', 'Guests', 'Vibe', and 'Budget'.
+ * Inputs: None (it manages its own local state).
+ * Outputs: Renders the interactive UI form.
+ * 
+ * Why it exists: This is the starting point of the app where the user tells us what kind of trip they want.
+ */
 export default function SearchForm() {
   const router = useRouter();
   const { user } = useAuth();
@@ -37,6 +47,15 @@ export default function SearchForm() {
   const filteredFromCities = cities.filter(c => c.toLowerCase().includes(fromSearch.toLowerCase()));
   const filteredToCities = cities.filter(c => c.toLowerCase().includes(toSearch.toLowerCase()));
 
+  /**
+   * Handles what happens when the user clicks the "EXPLORE THE WORLD" button.
+   * 
+   * @param e - The form submission event (Input)
+   * @returns void - It redirects the user rather than returning a value (Output)
+   * 
+   * Why it exists: Puts all the user's choices into the URL and sends them to the
+   * itinerary page where the trip will actually be generated.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fromCity || !toCity) return;
@@ -44,20 +63,13 @@ export default function SearchForm() {
     setIsGenerating(true);
 
     try {
-      if (user) {
-        // Logged in: generate and save to DB immediately
-        const tripId = await generateAndSaveTrip(fromCity, toCity, vibe, budget, user.id);
-        router.push(`/itinerary?id=${tripId}`);
-      } else {
-        // Guest: proceed with query params
-        const params = new URLSearchParams({ 
-          from: fromCity, 
-          to: toCity,
-          vibe: vibe.toLowerCase(),
-          budget: budget
-        });
-        router.push(`/itinerary?${params.toString()}`);
-      }
+      const params = new URLSearchParams({ 
+        from: fromCity, 
+        to: toCity,
+        vibe: vibe.toLowerCase(),
+        budget: budget
+      });
+      router.push(`/itinerary?${params.toString()}`);
     } catch (error) {
       console.error("Selection error:", error);
       // Fallback
@@ -302,24 +314,32 @@ export default function SearchForm() {
           </div>
         </div>
 
-        {/* Search Button */}
-        <div className="flex items-center justify-center px-4 py-4 border-t border-zinc-200 dark:border-zinc-800">
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
+        <div className="flex items-center justify-center px-4 py-10 border-t border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-white/[0.02] rounded-b-2xl">
+          <Button
             disabled={isGenerating}
             type="submit"
-            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full py-3 px-16 text-base md:text-xl font-bold shadow-xl transition-all uppercase tracking-widest"
+            variant="liquid"
+            size="lg"
+            className="group h-16 px-12 rounded-full text-base md:text-lg font-black uppercase tracking-[0.2em]"
           >
             {isGenerating ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Crafting Itinerary...
-              </>
+              <BouncingDots className="bg-current" />
             ) : (
-              "Search"
+              <>
+                <motion.svg 
+                  className="w-6 h-6 sm:w-7 sm:h-7 transition-all duration-[1.5s] ease-in-out group-hover:rotate-[250deg]" 
+                  viewBox="0 0 512 512" 
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path 
+                    fill="currentColor" 
+                    d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm50.7-186.9L162.4 380.6c-19.4 7.5-38.5-11.6-31-31l55.5-144.3c3.3-8.5 9.9-15.1 18.4-18.4l144.3-55.5c19.4-7.5 38.5 11.6 31 31L325.1 306.7c-3.2 8.5-9.9 15.1-18.4 18.4zM288 256a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z" 
+                  />
+                </motion.svg>
+                <span>EXPLORE THE WORLD</span>
+              </>
             )}
-          </motion.button>
+          </Button>
         </div>
 
       </form>

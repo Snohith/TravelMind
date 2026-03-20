@@ -67,7 +67,7 @@ export default function Navbar() {
                     <button
                       id="navbar-signout-btn"
                       onClick={handleLogout}
-                      className="text-sm text-zinc-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/[0.05]"
+                      className="relative bg-white/5 hover:bg-white/10 dark:bg-zinc-900 border border-white/10 dark:border-zinc-800 text-zinc-300 hover:text-white transition-all duration-300 px-4 py-1.5 rounded-full text-sm font-medium shadow-sm hover:scale-[1.02] active:scale-[0.98] overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity"
                     >
                       Sign Out
                     </button>
@@ -85,7 +85,7 @@ export default function Navbar() {
                     <Link
                       id="navbar-signup-btn"
                       href="/signup"
-                      className="flex items-center gap-2 text-sm font-semibold bg-white hover:bg-zinc-200 text-black px-4 py-2 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg"
+                      className="relative h-9 flex items-center justify-center gap-2 text-sm font-semibold bg-white dark:bg-zinc-100 hover:bg-zinc-200 text-black px-5 rounded-full transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-lg overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/40 before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity"
                     >
                       Sign Up
                     </Link>

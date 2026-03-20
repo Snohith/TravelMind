@@ -3,11 +3,12 @@
 import React, { useState, Suspense, useEffect } from "react";
 import Timeline from "@/components/Timeline";
 import InteractiveMap from "@/components/InteractiveMap";
+import { BouncingDots } from "@/components/ui/Loader";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 
 // Since we're using "useSearchParams", it needs to be wrapped in a suspense boundary
-import { getTripById, saveExistingTrip, getTripPreviewAction } from "@/app/actions/trips";
+import { getTripById, getTripPreviewAction } from "@/app/actions/trips";
 import { type Trip } from "@/data/mock-itinerary";
 
 function ItineraryContent() {
@@ -22,8 +23,6 @@ function ItineraryContent() {
 
   const [trip, setTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [hasSaved, setHasSaved] = useState(false);
 
   // Auth guard
   useEffect(() => {
@@ -64,7 +63,7 @@ function ItineraryContent() {
   if (loading || !trip) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center bg-[#050505] text-emerald-500 gap-4">
-        <div className="w-8 h-8 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+        <BouncingDots className="bg-emerald-500 w-2 h-2" />
         <span className="text-sm font-medium tracking-widest uppercase opacity-50">
           {loading ? "Generating your trip..." : "Trip not found"}
         </span>
@@ -76,7 +75,7 @@ function ItineraryContent() {
   if (!isLoaded || !user) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center bg-[#050505] text-emerald-500 gap-4">
-        <div className="w-8 h-8 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+        <BouncingDots className="bg-emerald-500 w-2 h-2" />
         <span className="text-sm font-medium tracking-widest uppercase opacity-50">Verifying access...</span>
       </div>
     );
@@ -96,23 +95,6 @@ function ItineraryContent() {
           onActivityClick={(loc) => setFocusedLocation(loc)}
           delicacies={trip.localDelicacies}
           photoGallery={trip.photoGallery}
-          onSave={!tripId ? async () => {
-            if (!trip || !user) return;
-            try {
-              setIsSaving(true);
-              const newId = await saveExistingTrip(trip, user.id);
-              setHasSaved(true);
-              // Optionally update URL to reflect saved status
-              router.replace(`/itinerary?id=${newId}`);
-            } catch (err) {
-              console.error("Failed to save trip:", err);
-              alert("Failed to save trip. Please try again.");
-            } finally {
-              setIsSaving(false);
-            }
-          } : undefined}
-          isSaving={isSaving}
-          hasSaved={hasSaved || !!tripId}
         />
       </div>
       
@@ -135,7 +117,7 @@ export default function ItineraryClient() {
     <div className="flex flex-col md:flex-row w-full h-[100dvh] pt-[64px] bg-neutral-950 text-white overflow-hidden font-sans">
       <Suspense fallback={
         <div className="w-full h-full flex flex-col items-center justify-center bg-[#050505] text-emerald-500 gap-4">
-          <div className="w-8 h-8 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+          <BouncingDots className="bg-emerald-500 w-2 h-2" />
           <span className="text-sm font-medium tracking-widest uppercase opacity-50">Loading Dashboard...</span>
         </div>
       }>

@@ -44,22 +44,22 @@ export default function Footer() {
             <h3 className="text-white font-bold text-sm uppercase tracking-wider mb-6">Product</h3>
             <ul className="flex flex-col gap-4">
               <li>
-                <Link href="/itinerary" className="text-zinc-400 hover:text-white text-sm transition-colors duration-300">
+                <Link href="/" className="text-zinc-400 hover:text-white text-sm transition-colors duration-300">
                   Itinerary Generator
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-zinc-400 hover:text-white text-sm transition-colors duration-300">
+                <Link href="/coming-soon" className="text-zinc-400 hover:text-white text-sm transition-colors duration-300">
                   Destination Finder
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-zinc-400 hover:text-white text-sm transition-colors duration-300">
+                <Link href="/coming-soon" className="text-zinc-400 hover:text-white text-sm transition-colors duration-300">
                   Budget Planner
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-zinc-400 hover:text-white text-sm transition-colors duration-300">
+                <Link href="/coming-soon" className="text-zinc-400 hover:text-white text-sm transition-colors duration-300">
                   Packing Assistant
                 </Link>
               </li>

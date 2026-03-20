@@ -21,9 +21,6 @@ interface TimelineProps {
   onActivityClick?: (location: { lat: number; lng: number }) => void;
   delicacies: Delicacy[];
   photoGallery: string[];
-  onSave?: () => void;
-  isSaving?: boolean;
-  hasSaved?: boolean;
 }
 
 const getActivityIcon = (type: Activity['type']) => {
@@ -67,10 +64,7 @@ export default function Timeline({
   totalPriceINR, 
   onActivityClick, 
   delicacies, 
-  photoGallery,
-  onSave,
-  isSaving,
-  hasSaved
+  photoGallery
 }: TimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -109,29 +103,6 @@ export default function Timeline({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {onSave && (
-            <button 
-              onClick={onSave}
-              disabled={isSaving || hasSaved}
-              className={cn(
-                "text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full transition-all shrink-0 flex items-center gap-1.5",
-                hasSaved 
-                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]" 
-                  : "bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
-              )}
-            >
-              {isSaving ? (
-                <>
-                  <div className="w-2.5 h-2.5 rounded-full border-2 border-white/20 border-t-white animate-spin" />
-                  Saving...
-                </>
-              ) : hasSaved ? (
-                "Saved to Profile"
-              ) : (
-                "Save Trip"
-              )}
-            </button>
-          )}
           <button 
             onClick={() => window.location.href = '/'}
             className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 border border-white/10 px-3 py-1.5 rounded-full hover:bg-white/5 hover:text-white transition-all shrink-0"
@@ -272,18 +243,6 @@ export default function Timeline({
                               </span>
                             )}
                           </div>
-                          
-                          {activity.location && isActive && (
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openStreetView(activity.location!.lat, activity.location!.lng);
-                              }}
-                              className="text-[9px] font-black uppercase tracking-tighter bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 hover:bg-indigo-500/20 transition-all opacity-0 group-hover/act:opacity-100"
-                            >
-                              Virtual Tour 360°
-                            </button>
-                          )}
                         </div>
                         <p className="text-[13px] text-neutral-500 leading-relaxed">
                           {activity.description}

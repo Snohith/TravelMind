@@ -8,71 +8,15 @@ type TripInsert = Database['public']['Tables']['trips']['Insert'];
 type DayInsert = Database['public']['Tables']['itinerary_days']['Insert'];
 type ActivityInsert = Database['public']['Tables']['activities']['Insert'];
 
-export async function saveExistingTrip(tripData: Trip, userId: string) {
-  // 1. Save main Trip record
-  const { data: trip, error: tripError } = await (supabase
-    .from('trips')
-    .insert({
-      user_id: userId,
-      from_city: tripData.from,
-      to_city: tripData.to,
-      vibe: 'balanced',
-      budget: 0,
-      total_price: Number(tripData.totalPriceINR) || 0,
-      duration: tripData.duration,
-      start_date: new Date().toISOString()
-    } as any)
-    .select()
-    .single() as any);
-
-  if (tripError || !trip) throw new Error(tripError?.message || "Failed to save trip");
-
-  // 2. Save Days and Activities
-  for (const day of tripData.days) {
-    const { data: dbDay, error: dayError } = await (supabase
-      .from('itinerary_days')
-      .insert({
-        trip_id: trip.id,
-        day_number: day.dayNumber,
-        date: day.date,
-        title: day.title,
-        description: day.description || "",
-        lat: Number(day.location.lat),
-        lng: Number(day.location.lng)
-      } as any)
-      .select()
-      .single() as any);
-
-    if (dayError || !dbDay) {
-      console.error("Error saving day:", dayError);
-      continue;
-    }
-
-    const activityInserts = day.activities.map(act => ({
-      day_id: dbDay.id,
-      time: act.time,
-      title: act.title,
-      description: act.description || "",
-      type: act.type,
-      lat: act.location?.lat ? Number(act.location.lat) : null,
-      lng: act.location?.lng ? Number(act.location.lng) : null,
-      price_inr: (act as any).price_inr || (act as any).priceINR || 0
-    }));
-
-    if (activityInserts.length > 0) {
-      const { error: actError } = await ((supabase as any).from('activities').insert(activityInserts) as any);
-      if (actError) console.error("Error saving activities:", actError);
-    }
-  }
-
-  return trip.id;
-}
-
-export async function generateAndSaveTrip(from: string, to: string, vibe: string, budget: string, userId: string) {
-  const tripData = await getTripByRoute(from, to, vibe, budget);
-  return saveExistingTrip(tripData, userId);
-}
-
+/**
+ * Fetches a single trip and all its associated daily plans and activities from the database.
+ * 
+ * @param tripId - The unique ID of the trip we want to find (Input)
+ * @returns A formatted Trip object with days and activities, or null if not found (Output)
+ * 
+ * Why it exists: When a user clicks on a saved trip in their dashboard, 
+ * we need to retrieve all the detailed information to display it.
+ */
 export async function getTripById(tripId: string) {
   const { data: trip, error } = await (supabase
     .from('trips')
@@ -120,6 +64,14 @@ export async function getTripById(tripId: string) {
   return mappedTrip;
 }
 
+/**
+ * Retrieves all trips created by a specific user, ordered by the newest first.
+ * 
+ * @param userId - The unique ID of the logged-in user (Input)
+ * @returns An array of trip objects belonging to the user (Output)
+ * 
+ * Why it exists: To populate the user's dashboard with their history of planned trips.
+ */
 export async function getUserTrips(userId: string) {
   const { data, error } = await (supabase
     .from('trips')
@@ -135,6 +87,15 @@ export async function getUserTrips(userId: string) {
   return data as any[];
 }
 
+/**
+ * Deletes a specific trip from the database, ensuring only the owner can delete it.
+ * 
+ * @param tripId - The ID of the trip to delete (Input)
+ * @param userId - The ID of the user requesting the deletion (Input)
+ * @returns true if successful, or throws an error if it fails (Output)
+ * 
+ * Why it exists: Gives users control over their data so they can remove trips they no longer want.
+ */
 export async function deleteTrip(tripId: string, userId: string) {
   const { error } = await (supabase
     .from('trips')
@@ -150,8 +111,16 @@ export async function deleteTrip(tripId: string, userId: string) {
 }
 
 /**
- * Server Action to generate a trip itinerary preview without saving to DB.
- * This keeps the "knowledge base" and generation logic on the server.
+ * Server Action to generate a new trip itinerary without saving it to the database yet.
+ * 
+ * @param from - The starting city (Input)
+ * @param to - The destination city (Input)
+ * @param vibe - The style of the trip, e.g., "Relaxing", "Adventure" (Input)
+ * @param budget - The maximum budget for the trip (Input)
+ * @returns A generated trip object with an itinerary (Output)
+ * 
+ * Why it exists: This is the core AI generation feature. It runs securely on the server
+ * so API keys and complex generation logic are kept hidden from the client browser.
  */
 export async function getTripPreviewAction(from: string | null, to: string | null, vibe: string | null, budget: string | null) {
   try {

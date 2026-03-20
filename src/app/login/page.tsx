@@ -6,19 +6,19 @@ import { useAuth } from "@/context/auth-context";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { BouncingDots } from "@/components/ui/Loader";
 
 function LoginForm() {
   const { user, isLoaded } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/itinerary";
+  const redirect = searchParams.get("redirect") || "/";
 
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLogging, setIsLogging] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
   // If already logged in, redirect immediately
   useEffect(() => {
@@ -28,8 +28,7 @@ function LoginForm() {
   }, [isLoaded, user, router, redirect]);
 
   function validate() {
-    const errs: { name?: string; email?: string; password?: string } = {};
-    if (!name.trim()) errs.name = "Please enter your name.";
+    const errs: { email?: string; password?: string } = {};
     if (!email.trim()) errs.email = "Please enter your email.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       errs.email = "Please enter a valid email.";
@@ -103,39 +102,14 @@ function LoginForm() {
           className="bg-white/[0.04] backdrop-blur-2xl border border-white/10 rounded-2xl p-8 shadow-2xl"
         >
           {/* Heading */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-white mb-1">Welcome back</h1>
+          <div className="mb-8 ">
+            <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
             <p className="text-sm text-zinc-400">
-              Sign in to access your personalized itineraries
+              Sign in to your account to continue
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-            {/* Name Field */}
-            <div>
-              <label
-                htmlFor="travelmind-name"
-                className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2"
-              >
-                Full Name
-              </label>
-              <input
-                id="travelmind-name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Arjun Sharma"
-                autoComplete="name"
-                className={`w-full bg-white/[0.05] border rounded-xl px-4 py-3 text-white placeholder-zinc-600 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/60 ${
-                  errors.name
-                    ? "border-red-500/60"
-                    : "border-white/10 hover:border-white/20"
-                }`}
-              />
-              {errors.name && (
-                <p className="text-red-400 text-xs mt-1.5">{errors.name}</p>
-              )}
-            </div>
 
             {/* Email Field */}
             <div>
@@ -165,12 +139,17 @@ function LoginForm() {
 
             {/* Password Field */}
             <div>
-              <label
-                htmlFor="travelmind-password"
-                className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2"
-              >
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label
+                  htmlFor="travelmind-password"
+                  className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider"
+                >
+                  Password
+                </label>
+                <Link href="#" className="text-xs font-semibold text-blue-500 hover:text-blue-400 transition-colors">
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 id="travelmind-password"
                 type="password"
@@ -201,15 +180,12 @@ function LoginForm() {
               id="login-submit-btn"
               type="submit"
               disabled={isLogging}
-              className="w-full mt-2 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-[1.01] flex items-center justify-center gap-2"
+              className="w-full mt-2 relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-black dark:text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-300 shadow-lg hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 dark:before:from-white/5 before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity"
             >
               {isLogging ? (
-                <>
-                  <span className="w-4 h-4 rounded-full border-2 border-black/30 border-t-black animate-spin" />
-                  Sending Link...
-                </>
+                <BouncingDots className="bg-current" />
               ) : (
-                "Sign In & Plan My Trip →"
+                "Sign In"
               )}
             </button>
           </form>
@@ -267,8 +243,9 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4">
+        <BouncingDots className="bg-emerald-500 w-3 h-3" />
+        <span className="text-xs font-bold tracking-[0.2em] text-emerald-500/50 uppercase">Loading</span>
       </div>
     }>
       <LoginForm />

@@ -466,7 +466,7 @@ export const getTripByRoute = async (fromStr?: string | null, toStr?: string | n
     title: `Arrival & ${theme === 'beach' ? 'Beach' : 'Heritage'} Start`,
     description: `Touch down and begin your ${vibeParam} centered journey in ${destination}.`,
     location: sortedLandmarks[0].coords,
-    headerImage: destInfo?.image || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=1200",
+    headerImage: destInfo?.image,
     forecast: { temp: 30, condition: 'Sunny' },
     activities: [
       {
@@ -514,7 +514,7 @@ export const getTripByRoute = async (fromStr?: string | null, toStr?: string | n
       title: `${destination} Deep Dive`,
       description: `Exploring the hidden gems and ${vibeParam} spots of the city.`,
       location: sortedLandmarks[landmarkIdx].coords,
-      headerImage: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=1200",
+      headerImage: destInfo?.photoGallery?.length ? destInfo.photoGallery[i % destInfo.photoGallery.length] : destInfo?.image,
       forecast: { temp: 28, condition: 'Sunny' },
       activities: [
         {
@@ -554,7 +554,7 @@ export const getTripByRoute = async (fromStr?: string | null, toStr?: string | n
     title: "Final Moments",
     description: "Collecting souvenirs and memories before the journey home.",
     location: originCoords,
-    headerImage: "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&q=80&w=1200",
+    headerImage: destInfo?.image,
     forecast: { temp: 25, condition: 'Mist' },
     activities: [
       {
