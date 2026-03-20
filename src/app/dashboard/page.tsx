@@ -17,7 +17,7 @@ export default function DashboardPage() {
     async function fetchTrips() {
       if (user) {
         setLoading(true);
-        const data = await getUserTrips(user.id);
+        const data = await getUserTrips();
         setTrips(data);
         setLoading(false);
       }
@@ -35,7 +35,7 @@ export default function DashboardPage() {
     if (!user || !confirm("Are you sure you want to delete this trip?")) return;
     
     try {
-      await deleteTrip(tripId, user.id);
+      await deleteTrip(tripId);
       setTrips(prev => prev.filter(t => t.id !== tripId));
     } catch (err) {
       console.error("Delete failed:", err);

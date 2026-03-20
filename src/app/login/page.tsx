@@ -27,6 +27,17 @@ function LoginForm() {
     }
   }, [isLoaded, user, router, redirect]);
 
+  // Check for session conflict errors
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam === "session-conflict") {
+      setMessage({ 
+        type: 'error', 
+        text: "You have been signed out because you logged in on another device. For security, only one session is allowed at a time." 
+      });
+    }
+  }, [searchParams]);
+
   function validate() {
     const errs: { email?: string; password?: string } = {};
     if (!email.trim()) errs.email = "Please enter your email.";
