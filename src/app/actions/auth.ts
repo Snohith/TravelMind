@@ -16,10 +16,10 @@ export async function registerNewSession() {
 
   const newSessionId = crypto.randomUUID();
 
-  const { error } = await (supabase
+  const { error } = await supabase
     .from('profiles')
-    .update({ last_session_id: newSessionId } as any)
-    .eq('id', user.id) as any);
+    .update({ last_session_id: newSessionId })
+    .eq('id', user.id);
 
   if (error) {
     console.error("Error registering new session:", error);
@@ -38,11 +38,11 @@ export async function validateSession(clientSessionId: string) {
 
   if (!user) return { isValid: false };
 
-  const { data: profile, error } = await (supabase
+  const { data: profile, error } = await supabase
     .from('profiles')
     .select('last_session_id')
     .eq('id', user.id)
-    .single() as any);
+    .single();
 
   if (error || !profile) return { isValid: false };
 
