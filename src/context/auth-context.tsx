@@ -1,24 +1,19 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-
-interface User {
-  name: string;
-  email: string;
-}
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { User } from "@supabase/supabase-js";
 
 interface AuthContextType {
   user: User | null;
   isLoaded: boolean;
-  login: (name: string, email: string) => void;
-  logout: () => void;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoaded: false,
-  login: () => {},
-  logout: () => {},
+  signOut: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -26,31 +21,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("travelmind_user");
-      if (stored) {
-        setUser(JSON.parse(stored));
-      }
-    } catch {
-      // ignore parse errors
-    } finally {
+    // Check active sessions and sets the user
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
       setIsLoaded(true);
-    }
+    });
+
+    // Listen for changes on auth state (sign in, sign out, etc.)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      setIsLoaded(true);
+
+      if (event === 'SIGNED_IN' && session?.user) {
+        // Sync profile to public.profiles
+        const { id, user_metadata } = session.user;
+        const { error } = await supabase
+          .from('profiles')
+          .upsert({
+            id: id,
+            full_name: (user_metadata?.full_name as string) || 'Generic User',
+            updated_at: new Date().toISOString(),
+          } as any);
+        
+        if (error) console.error('Error syncing profile:', error);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = useCallback((name: string, email: string) => {
-    const newUser = { name, email };
-    localStorage.setItem("travelmind_user", JSON.stringify(newUser));
-    setUser(newUser);
-  }, []);
-
-  const logout = useCallback(() => {
-    localStorage.removeItem("travelmind_user");
-    setUser(null);
-  }, []);
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
 
   return (
-    <AuthContext.Provider value={{ user, isLoaded, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoaded, signOut }}>
       {children}
     </AuthContext.Provider>
   );

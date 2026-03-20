@@ -1,18 +1,29 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import Image from "next/image";
 import { ItineraryDay, Activity } from "@/data/mock-itinerary";
 import { motion } from "framer-motion";
-import { Utensils, Camera, Train, MapPin, Bed, IndianRupee } from "lucide-react";
+import { Utensils, Camera, Train, MapPin, Bed, IndianRupee, Sun, Cloud, CloudRain, Droplets, Snowflake } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+import PackingList from "./PackingList";
+import LocalFoodGuide from "./LocalFoodGuide";
+import { Delicacy } from "@/data/mock-itinerary";
 
 interface TimelineProps {
   itinerary: ItineraryDay[];
   activeDayId: string;
   setActiveDayId: (id: string) => void;
+  vibe?: string;
   tripTitle?: string;
   totalPriceINR?: number;
   onActivityClick?: (location: { lat: number; lng: number }) => void;
+  delicacies: Delicacy[];
+  photoGallery: string[];
+  onSave?: () => void;
+  isSaving?: boolean;
+  hasSaved?: boolean;
 }
 
 const getActivityIcon = (type: Activity['type']) => {
@@ -26,6 +37,18 @@ const getActivityIcon = (type: Activity['type']) => {
   }
 };
 
+const getWeatherIcon = (condition: 'Sunny' | 'Cloudy' | 'Rainy' | 'Mist' | 'Snow' | undefined) => {
+  if (!condition) return <Sun className="w-3 h-3 text-amber-400" />;
+  switch (condition) {
+    case 'Sunny': return <Sun className="w-3 h-3 text-amber-400" />;
+    case 'Cloudy': return <Cloud className="w-3 h-3 text-neutral-400" />;
+    case 'Rainy': return <CloudRain className="w-3 h-3 text-blue-400" />;
+    case 'Mist': return <Droplets className="w-3 h-3 text-slate-400" />;
+    case 'Snow': return <Snowflake className="w-3 h-3 text-teal-200" />;
+    default: return <Sun className="w-3 h-3 text-amber-400" />;
+  }
+};
+
 function formatINR(amount: number): string {
   if (amount === 0) return "Free";
   return new Intl.NumberFormat('en-IN', {
@@ -35,7 +58,20 @@ function formatINR(amount: number): string {
   }).format(amount);
 }
 
-export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripTitle, totalPriceINR, onActivityClick }: TimelineProps) {
+export default function Timeline({ 
+  itinerary, 
+  activeDayId, 
+  setActiveDayId, 
+  vibe = 'standard', 
+  tripTitle, 
+  totalPriceINR, 
+  onActivityClick, 
+  delicacies, 
+  photoGallery,
+  onSave,
+  isSaving,
+  hasSaved
+}: TimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Auto-scroll the timeline to the active day
@@ -51,13 +87,58 @@ export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripT
     }, 100);
   }, [activeDayId]);
 
+  const openStreetView = (lat: number, lng: number) => {
+    window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`, '_blank');
+  };
+
   return (
     <div className="min-h-full bg-neutral-950 p-4 md:p-8 relative" ref={containerRef}>
-      <div className="mb-6 sticky top-0 bg-neutral-950/90 backdrop-blur-xl z-30 py-3 -mt-4 border-b border-white/5">
-        <h1 className="text-lg sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400 leading-tight">
-          {tripTitle || "Your Itinerary"}
-        </h1>
-        <p className="text-xs text-neutral-500 mt-0.5">Review your personalized journey day by day.</p>
+      <div className="mb-6 sticky top-0 bg-neutral-950/90 backdrop-blur-xl z-30 py-3 -mt-4 border-b border-white/5 flex items-center justify-between">
+        <div>
+          <h1 className="text-lg sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400 leading-tight">
+            {tripTitle || "Your Itinerary"}
+          </h1>
+          <div className="flex items-center gap-3 mt-1">
+            <p className="text-xs text-neutral-500">Review your journey day by day.</p>
+            {totalPriceINR !== undefined && (
+              <span className="text-xs font-bold text-emerald-400 flex items-center gap-0.5">
+                <IndianRupee className="w-2.5 h-2.5" />
+                {new Intl.NumberFormat('en-IN').format(totalPriceINR)} Total
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {onSave && (
+            <button 
+              onClick={onSave}
+              disabled={isSaving || hasSaved}
+              className={cn(
+                "text-[10px] font-bold uppercase tracking-widest px-4 py-1.5 rounded-full transition-all shrink-0 flex items-center gap-1.5",
+                hasSaved 
+                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]" 
+                  : "bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+              )}
+            >
+              {isSaving ? (
+                <>
+                  <div className="w-2.5 h-2.5 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                  Saving...
+                </>
+              ) : hasSaved ? (
+                "Saved to Profile"
+              ) : (
+                "Save Trip"
+              )}
+            </button>
+          )}
+          <button 
+            onClick={() => window.location.href = '/'}
+            className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 border border-white/10 px-3 py-1.5 rounded-full hover:bg-white/5 hover:text-white transition-all shrink-0"
+          >
+            Edit Trip
+          </button>
+        </div>
       </div>
 
       <div className="relative border-l border-white/10 ml-4 md:ml-6 pb-4">
@@ -69,14 +150,43 @@ export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripT
               key={day.id} 
               data-day-id={day.id}
               className={cn(
-                "mb-10 relative pl-7 md:pl-10 transition-all duration-500 cursor-pointer group",
-                isActive ? "opacity-100" : "opacity-50 hover:opacity-80"
+                "mb-12 relative pl-7 md:pl-10 transition-all duration-500 cursor-pointer group",
+                isActive ? "opacity-100" : "opacity-40 hover:opacity-70"
               )}
               onClick={() => setActiveDayId(day.id)}
             >
+              {/* Day Header Image (Premium Visual) */}
+              {day.headerImage && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: isActive ? 1 : 0.6, y: 0 }}
+                  className={cn(
+                    "mb-4 overflow-hidden rounded-2xl aspect-[21/9] relative border border-white/5",
+                    isActive ? "ring-2 ring-emerald-500/20" : ""
+                  )}
+                >
+                  <Image 
+                    src={day.headerImage} 
+                    alt={day.title}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-transparent to-transparent" />
+                  
+                  {/* Weather Badge Overlay */}
+                  {day.forecast && (
+                    <div className="absolute top-3 right-3 bg-black/40 backdrop-blur-md border border-white/10 px-2 py-1 rounded-lg flex items-center gap-1.5">
+                      {getWeatherIcon(day.forecast.condition)}
+                      <span className="text-[10px] font-bold text-white leading-none">{day.forecast.temp}°C</span>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
               {/* Timeline Dot Component */}
               <div className={cn(
-                "absolute -left-[17px] top-1 w-8 h-8 rounded-full border-4 border-neutral-950 flex items-center justify-center transition-all duration-500",
+                "absolute -left-[17px] top-1 w-8 h-8 rounded-full border-4 border-neutral-950 flex items-center justify-center transition-all duration-500 z-10",
                 isActive 
                   ? "bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)] scale-110" 
                   : "bg-neutral-800 group-hover:bg-neutral-600"
@@ -121,10 +231,10 @@ export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripT
                       }
                     }}
                     className={cn(
-                      "relative pl-6 py-4 border-l-2 ml-[3px] rounded-r-2xl transition-all duration-300",
+                      "relative pl-6 py-4 border-l-2 ml-[3px] rounded-r-2xl transition-all duration-300 group/act",
                       isActive 
                         ? "border-emerald-500/40 bg-white/[0.03] hover:bg-white/[0.05]" 
-                        : "border-transparent hover:bg-white/[0.02]",
+                        : "border-transparent hover:bg-white/[0.01]",
                       activity.location ? "cursor-pointer" : ""
                     )}
                   >
@@ -145,17 +255,34 @@ export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripT
                         {activity.time}
                       </span>
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className={cn(
-                            "text-sm font-semibold mb-1 transition-colors duration-300",
-                            isActive ? "text-neutral-100" : "text-neutral-400"
-                          )}>
-                            {activity.title}
-                          </h4>
+                        <div className="flex items-center gap-2 flex-wrap justify-between">
+                          <div className="flex items-center gap-2">
+                            <h4 className={cn(
+                              "text-sm font-semibold mb-1 transition-colors duration-300",
+                              isActive ? "text-neutral-100" : "text-neutral-400"
+                            )}>
+                              {activity.title}
+                            </h4>
+                            {activity.location && (
+                              <span className={cn(
+                                "text-[10px] font-medium flex items-center gap-0.5 mb-1 transition-colors duration-300",
+                                isActive ? "text-emerald-400/70" : "text-neutral-600 group-hover/act:text-neutral-400"
+                              )}>
+                                <MapPin className="w-2.5 h-2.5" /> View on map
+                              </span>
+                            )}
+                          </div>
+                          
                           {activity.location && isActive && (
-                            <span className="text-[10px] text-emerald-400/70 font-medium flex items-center gap-0.5 mb-1">
-                              <MapPin className="w-2.5 h-2.5" /> View on map
-                            </span>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openStreetView(activity.location!.lat, activity.location!.lng);
+                              }}
+                              className="text-[9px] font-black uppercase tracking-tighter bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/20 hover:bg-indigo-500/20 transition-all opacity-0 group-hover/act:opacity-100"
+                            >
+                              Virtual Tour 360°
+                            </button>
                           )}
                         </div>
                         <p className="text-[13px] text-neutral-500 leading-relaxed">
@@ -198,7 +325,7 @@ export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripT
                 </span>
               </div>
               <p className="text-[11px] text-neutral-500 mt-1">
-                For 5 days · 2 adults · Flights + Stay + Activities
+                For 5 days · Flights + Stay + Activities
               </p>
             </div>
             <div className="text-right hidden sm:block">
@@ -216,6 +343,15 @@ export default function Timeline({ itinerary, activeDayId, setActiveDayId, tripT
           </div>
         </div>
       )}
+
+      {/* Local Food Guide Integration */}
+      <LocalFoodGuide delicacies={delicacies} />
+
+      {/* AI Dynamic Packing List */}
+      <PackingList 
+        vibe={vibe} 
+        weather={itinerary[0]?.forecast?.condition} 
+      />
     </div>
   );
 }

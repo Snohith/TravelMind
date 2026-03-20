@@ -7,20 +7,21 @@ import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user, isLoaded, logout } = useAuth();
+  const { user, isLoaded, signOut } = useAuth();
   const router = useRouter();
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await signOut();
     router.push("/");
     setMobileMenuOpen(false);
   }
 
   // Get initials for avatar
-  const initials = user?.name
-    ? user.name
+  const fullName = user?.user_metadata?.full_name || user?.email || "";
+  const initials = fullName
+    ? fullName
         .split(" ")
-        .map((w) => w[0])
+        .map((w: string) => w[0])
         .slice(0, 2)
         .join("")
         .toUpperCase()
@@ -40,6 +41,11 @@ export default function Navbar() {
               <Link href="/#how-to-use" className="hover:text-white transition-colors cursor-pointer">
                 How To Use
               </Link>
+              {user && (
+                <Link href="/dashboard" className="hover:text-white transition-colors cursor-pointer">
+                  My Trips
+                </Link>
+              )}
             </div>
           </div>
 
@@ -55,7 +61,7 @@ export default function Navbar() {
                         {initials}
                       </div>
                       <span className="text-sm text-zinc-300 font-medium max-w-[120px] truncate">
-                        {user.name.split(" ")[0]}
+                        {(user?.user_metadata?.full_name || user?.email || "User").split(" ")[0]}
                       </span>
                     </div>
                     <button
@@ -68,13 +74,22 @@ export default function Navbar() {
                   </div>
                 ) : (
                   // Logged out state
-                  <Link
-                    id="navbar-signin-btn"
-                    href="/login"
-                    className="hidden md:flex items-center gap-2 text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-black px-4 py-2 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg shadow-emerald-500/20"
-                  >
-                    Sign In
-                  </Link>
+                  <div className="hidden md:flex items-center gap-3">
+                    <Link
+                      id="navbar-signin-btn"
+                      href="/login"
+                      className="text-sm font-medium text-zinc-400 hover:text-white transition-colors px-4 py-2 rounded-xl hover:bg-white/[0.05]"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      id="navbar-signup-btn"
+                      href="/signup"
+                      className="flex items-center gap-2 text-sm font-semibold bg-white hover:bg-zinc-200 text-black px-4 py-2 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
                 )}
               </>
             )}
@@ -105,6 +120,15 @@ export default function Navbar() {
           >
             How To Use
           </Link>
+          {user && (
+            <Link
+              href="/dashboard"
+              className="block py-3 text-sm font-medium text-zinc-400 hover:text-white transition-colors border-b border-white/5"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              My Trips
+            </Link>
+          )}
           {isLoaded && (
             <>
               {user ? (
@@ -114,7 +138,7 @@ export default function Navbar() {
                       {initials}
                     </div>
                     <div>
-                      <p className="text-sm text-white font-medium">{user.name}</p>
+                      <p className="text-sm text-white font-medium">{user.user_metadata?.full_name || user.email}</p>
                       <p className="text-xs text-zinc-500">{user.email}</p>
                     </div>
                   </div>
@@ -126,13 +150,22 @@ export default function Navbar() {
                   </button>
                 </>
               ) : (
-                <Link
-                  href="/login"
-                  className="block py-3 text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Sign In →
-                </Link>
+                <div className="py-3 flex flex-col gap-3">
+                  <Link
+                    href="/login"
+                    className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Sign Up →
+                  </Link>
+                </div>
               )}
             </>
           )}

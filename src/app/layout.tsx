@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { AuthProvider } from "@/context/auth-context";
 import "./globals.css";
 
@@ -15,8 +16,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TravelMind | Design the Perfect Trip",
-  description: "AI-Powered Destination-Based Trip Planner for selecting and organizing complex itineraries.",
+  title: "TravelMind | Design your Perfect AI-Powered Trip",
+  description: "TravelMind is an AI-Powered destination-based trip planner. Generate custom itineraries, explore hidden gems, and organize your perfect journey in seconds.",
+  keywords: ["travel planner", "AI travel", "itinerary maker", "trip designer", "travel community"],
+  authors: [{ name: "TravelMind Team" }],
+  openGraph: {
+    title: "TravelMind | Design your Perfect Trip",
+    description: "Design, organize, and experience the perfect trip with AI-powered itineraries.",
+    url: "https://travelmind.ai",
+    siteName: "TravelMind",
+    images: [{ url: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=1200", width: 1200, height: 630 }],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TravelMind | Design your Perfect Trip",
+    description: "Design, organize, and experience the perfect trip with AI-powered itineraries.",
+    images: ["https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=1200"],
+  },
 };
 
 export default function RootLayout({
@@ -39,6 +57,7 @@ export default function RootLayout({
           <main className="relative z-0 flex-grow">
             {children}
           </main>
+          <Footer />
         </AuthProvider>
       </body>
     </html>

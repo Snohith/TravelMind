@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
-function LoginForm() {
+function SignupForm() {
   const { user, isLoaded } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -16,7 +16,7 @@ function LoginForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLogging, setIsLogging] = useState(false);
+  const [isSigningUp, setIsSigningUp] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string }>({});
 
@@ -34,6 +34,7 @@ function LoginForm() {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       errs.email = "Please enter a valid email.";
     if (!password) errs.password = "Please enter a password.";
+    else if (password.length < 6) errs.password = "Password must be at least 6 characters.";
     return errs;
   }
 
@@ -45,31 +46,37 @@ function LoginForm() {
       return;
     }
     setErrors({});
-    setIsLogging(true);
+    setIsSigningUp(true);
     setMessage(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signUp({
       email: email.trim(),
       password: password,
+      options: {
+        data: {
+          full_name: name.trim(),
+        },
+        emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}`,
+      },
     });
 
-    setIsLogging(false);
+    setIsSigningUp(false);
 
     if (error) {
       setMessage({ type: 'error', text: error.message });
     } else {
-      router.replace(redirect);
+      setMessage({ type: 'success', text: "Account registration sent! Check your email for the link." });
     }
   }
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-black overflow-hidden">
       {/* Background Glows */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute inset-0 bg-grid-white/[0.02] pointer-events-none" />
 
-      {/* Noise overlay for premium texture */}
+      {/* Noise overlay */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.03]"
         style={{
@@ -104,9 +111,9 @@ function LoginForm() {
         >
           {/* Heading */}
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-white mb-1">Welcome back</h1>
+            <h1 className="text-2xl font-bold text-white mb-1">Create Account</h1>
             <p className="text-sm text-zinc-400">
-              Sign in to access your personalized itineraries
+              Join TravelMind to start planning your dream trips
             </p>
           </div>
 
@@ -114,19 +121,19 @@ function LoginForm() {
             {/* Name Field */}
             <div>
               <label
-                htmlFor="travelmind-name"
+                htmlFor="signup-name"
                 className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2"
               >
                 Full Name
               </label>
               <input
-                id="travelmind-name"
+                id="signup-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Arjun Sharma"
                 autoComplete="name"
-                className={`w-full bg-white/[0.05] border rounded-xl px-4 py-3 text-white placeholder-zinc-600 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/60 ${
+                className={`w-full bg-white/[0.05] border rounded-xl px-4 py-3 text-white placeholder-zinc-600 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/60 ${
                   errors.name
                     ? "border-red-500/60"
                     : "border-white/10 hover:border-white/20"
@@ -140,19 +147,19 @@ function LoginForm() {
             {/* Email Field */}
             <div>
               <label
-                htmlFor="travelmind-email"
+                htmlFor="signup-email"
                 className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2"
               >
                 Email
               </label>
               <input
-                id="travelmind-email"
+                id="signup-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="arjun@example.com"
                 autoComplete="email"
-                className={`w-full bg-white/[0.05] border rounded-xl px-4 py-3 text-white placeholder-zinc-600 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/60 ${
+                className={`w-full bg-white/[0.05] border rounded-xl px-4 py-3 text-white placeholder-zinc-600 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/60 ${
                   errors.email
                     ? "border-red-500/60"
                     : "border-white/10 hover:border-white/20"
@@ -166,19 +173,19 @@ function LoginForm() {
             {/* Password Field */}
             <div>
               <label
-                htmlFor="travelmind-password"
+                htmlFor="signup-password"
                 className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2"
               >
                 Password
               </label>
               <input
-                id="travelmind-password"
+                id="signup-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                autoComplete="current-password"
-                className={`w-full bg-white/[0.05] border rounded-xl px-4 py-3 text-white placeholder-zinc-600 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/60 ${
+                autoComplete="new-password"
+                className={`w-full bg-white/[0.05] border rounded-xl px-4 py-3 text-white placeholder-zinc-600 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/60 ${
                   errors.password
                     ? "border-red-500/60"
                     : "border-white/10 hover:border-white/20"
@@ -198,28 +205,28 @@ function LoginForm() {
 
             {/* Submit Button */}
             <button
-              id="login-submit-btn"
+              id="signup-submit-btn"
               type="submit"
-              disabled={isLogging}
-              className="w-full mt-2 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:scale-[1.01] flex items-center justify-center gap-2"
+              disabled={isSigningUp}
+              className="w-full mt-2 bg-white hover:bg-zinc-200 disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold py-3.5 rounded-xl text-sm transition-all duration-200 shadow-lg hover:scale-[1.01] flex items-center justify-center gap-2"
             >
-              {isLogging ? (
+              {isSigningUp ? (
                 <>
                   <span className="w-4 h-4 rounded-full border-2 border-black/30 border-t-black animate-spin" />
-                  Sending Link...
+                  Creating Account...
                 </>
               ) : (
-                "Sign In & Plan My Trip →"
+                "Create Account & Start Planning →"
               )}
             </button>
           </form>
 
-          {/* Link to Signup */}
+          {/* Link to Login */}
           <div className="mt-6 text-center">
             <p className="text-sm text-zinc-500">
-              Don't have an account?{" "}
-              <Link href="/signup" className="text-white hover:underline font-medium">
-                Sign up
+              Already have an account?{" "}
+              <Link href="/login" className="text-white hover:underline font-medium">
+                Sign in
               </Link>
             </p>
           </div>
@@ -227,7 +234,7 @@ function LoginForm() {
           {/* Divider */}
           <div className="mt-8 pt-6 border-t border-white/5">
             <p className="text-xs text-zinc-500 text-center leading-relaxed">
-              By signing in, you agree to our{" "}
+              By joining, you agree to our{" "}
               <span className="text-zinc-400 hover:text-white transition-colors cursor-pointer">
                 Terms of Service
               </span>{" "}
@@ -238,40 +245,19 @@ function LoginForm() {
             </p>
           </div>
         </motion.div>
-
-        {/* Feature pills */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-6 flex flex-wrap justify-center gap-2"
-        >
-          {[
-            "✈️ Smart Itineraries",
-            "🗺️ Interactive Maps",
-            "💰 Cost Estimates",
-          ].map((pill) => (
-            <span
-              key={pill}
-              className="text-xs text-zinc-500 bg-white/[0.03] border border-white/[0.07] rounded-full px-3 py-1"
-            >
-              {pill}
-            </span>
-          ))}
-        </motion.div>
       </div>
     </div>
   );
 }
 
-export default function LoginPage() {
+export default function SignupPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+        <div className="w-8 h-8 rounded-full border-4 border-blue-500/20 border-t-blue-500 animate-spin" />
       </div>
     }>
-      <LoginForm />
+      <SignupForm />
     </Suspense>
   );
 }

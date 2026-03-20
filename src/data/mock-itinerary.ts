@@ -16,6 +16,8 @@ export interface ItineraryDay {
   description: string;
   location: { lat: number; lng: number };
   activities: Activity[];
+  headerImage?: string; // High-quality vibe/city image
+  forecast?: { temp: number; condition: 'Sunny' | 'Cloudy' | 'Rainy' | 'Mist' | 'Snow' };
 }
 
 export interface Trip {
@@ -26,6 +28,8 @@ export interface Trip {
   duration: number;
   days: ItineraryDay[];
   totalPriceINR?: number;
+  localDelicacies: Delicacy[];
+  photoGallery: string[];
 }
 
 // Helper to calculate next days based on a standard format
@@ -43,19 +47,29 @@ const generateDateRange = (startDayOffset: number, count: number): string[] => {
 // --- City Knowledge Base ---
 // Each city has real coordinates, top landmarks, restaurants, and activities
 
+export interface Delicacy {
+  name: string;
+  description: string;
+  image: string;
+}
+
 interface CityInfo {
   coords: { lat: number; lng: number };
   theme: 'beach' | 'heritage' | 'mountain' | 'metro';
   landmarks: Array<{ name: string; description: string; coords: { lat: number; lng: number } }>;
   restaurants: Array<{ name: string; description: string }>;
   activities: Array<{ name: string; description: string }>;
-  transport: string; // How to get there
+  transport: string;
+  image: string; // High-quality city hero image
+  localDelicacies: Delicacy[];
+  photoGallery: string[];
 }
 
 const cityKnowledge: Record<string, CityInfo> = {
   hyderabad: {
     coords: { lat: 17.3850, lng: 78.4867 },
     theme: 'heritage',
+    image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&q=80&w=1200",
     landmarks: [
       { name: "Charminar", description: "The iconic 16th-century monument and mosque, heart of the old city.", coords: { lat: 17.3616, lng: 78.4747 } },
       { name: "Golconda Fort", description: "Magnificent ruined citadel known for its acoustic system and diamond trade history.", coords: { lat: 17.3833, lng: 78.4011 } },
@@ -73,10 +87,21 @@ const cityKnowledge: Record<string, CityInfo> = {
       { name: "HITEC City Tech Walk", description: "Explore the modern IT hub with its glass towers and global MNC offices." },
     ],
     transport: "Flight to Rajiv Gandhi International Airport (HYD)",
+    localDelicacies: [
+      { name: "Hyderabadi Dum Biryani", description: "World-famous slow-cooked basmati rice with marinated meat and spices.", image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&q=80&w=400" },
+      { name: "Haleem", description: "A savory stew of meat, lentils, and pounded wheat, traditionally had during Ramadan.", image: "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&q=80&w=400" },
+      { name: "Qubani-ka-Meetha", description: "An apricot-based dessert served with fresh cream or ice cream.", image: "https://images.unsplash.com/photo-1563805039227-9aba5244583e?auto=format&fit=crop&q=80&w=400" }
+    ],
+    photoGallery: [
+      "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1608958435020-e8a7109ba809?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1572435230485-61c0f0f58444?auto=format&fit=crop&q=80&w=800"
+    ]
   },
   warangal: {
     coords: { lat: 17.9689, lng: 79.5941 },
     theme: 'heritage',
+    image: "https://images.unsplash.com/photo-1603260391630-302bf0699279?auto=format&fit=crop&q=80&w=1200",
     landmarks: [
       { name: "Warangal Fort", description: "Ancient Kakatiya dynasty fortress with impressive stone gateways.", coords: { lat: 17.9604, lng: 79.5943 } },
       { name: "Thousand Pillar Temple", description: "11th-century Kakatiya star-shaped temple with intricate carvings.", coords: { lat: 17.9619, lng: 79.5935 } },
@@ -93,10 +118,16 @@ const cityKnowledge: Record<string, CityInfo> = {
       { name: "Eturnagaram Wildlife Sanctuary", description: "Spot deer, wild boar and bison in one of Telangana's oldest sanctuaries." },
     ],
     transport: "Train to Warangal Railway Station from major cities",
+    localDelicacies: [
+      { name: "Sarva Pindi", description: "Savory pancake made with rice flour and chana dal.", image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&q=80&w=400" },
+      { name: "Polelu", description: "Traditional sweet flatbread filled with jaggery and lentils.", image: "https://images.unsplash.com/photo-1589118949245-7d40afbfa28e?auto=format&fit=crop&q=80&w=400" }
+    ],
+    photoGallery: []
   },
   vizag: {
     coords: { lat: 17.6868, lng: 83.2185 },
     theme: 'beach',
+    image: "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?auto=format&fit=crop&q=80&w=1200",
     landmarks: [
       { name: "Rushikonda Beach", description: "Golden-sand beach popular for water sports and parasailing.", coords: { lat: 17.7828, lng: 83.3702 } },
       { name: "Borra Caves", description: "Ancient limestone caves in the Araku Valley with stunning stalactites.", coords: { lat: 18.1167, lng: 83.1000 } },
@@ -114,10 +145,16 @@ const cityKnowledge: Record<string, CityInfo> = {
       { name: "Beach Road Cycling", description: "Cycle along the scenic coastal road between RK Beach and Rushikonda." },
     ],
     transport: "Flight to Visakhapatnam Airport (VTZ) or train",
+    localDelicacies: [
+      { name: "Bamboo Chicken", description: "Araku specialty - chicken cooked inside green bamboo stalks.", image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&q=80&w=400" },
+      { name: "Andhra Fish Curry", description: "Tangy and spicy fish curry made with tamarind.", image: "https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?auto=format&fit=crop&q=80&w=400" }
+    ],
+    photoGallery: []
   },
   mumbai: {
     coords: { lat: 19.0760, lng: 72.8777 },
     theme: 'metro',
+    image: "https://images.unsplash.com/photo-1570160897040-fb42e886ea73?auto=format&fit=crop&q=80&w=1200",
     landmarks: [
       { name: "Gateway of India", description: "The iconic basalt arch monument overlooking the Arabian Sea.", coords: { lat: 18.9220, lng: 72.8347 } },
       { name: "Marine Drive", description: "The famous 'Queen's Necklace' promenade stretching 3.6 km along the sea.", coords: { lat: 18.9432, lng: 72.8235 } },
@@ -135,10 +172,20 @@ const cityKnowledge: Record<string, CityInfo> = {
       { name: "Colaba Causeway Shopping", description: "Browse antiques, jewellery, and streetwear at Mumbai's best flea market." },
     ],
     transport: "Flight to Chhatrapati Shivaji International Airport (BOM)",
+    localDelicacies: [
+      { name: "Vada Pav", description: "The ultimate Bombay burger - spicy potato fritter in a bun.", image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=400" },
+      { name: "Pav Bhaji", description: "Mashed vegetable curry served with buttery toasted buns.", image: "https://images.unsplash.com/photo-1606491956689-2ea866880c84?auto=format&fit=crop&q=80&w=400" },
+      { name: "Misal Pav", description: "Spicy sprout curry topped with farsan and served with bread.", image: "https://images.unsplash.com/photo-1645177623570-52a8069d451d?auto=format&fit=crop&q=80&w=400" }
+    ],
+    photoGallery: [
+      "https://images.unsplash.com/photo-1566549033225-546bcc816e87?auto=format&fit=crop&q=80&w=800",
+      "https://images.unsplash.com/photo-1570160897040-fb42e886ea73?auto=format&fit=crop&q=80&w=800"
+    ]
   },
   bangalore: {
     coords: { lat: 12.9716, lng: 77.5946 },
     theme: 'metro',
+    image: "https://images.unsplash.com/photo-1596422846543-75c6fc18a593?auto=format&fit=crop&q=80&w=1200",
     landmarks: [
       { name: "Lalbagh Botanical Garden", description: "250-year-old garden with a 3,000-year-old Deccan rock, designed by Hyder Ali.", coords: { lat: 12.9507, lng: 77.5848 } },
       { name: "Bangalore Palace", description: "Tudor-style royal palace inspired by Windsor Castle, with fortified towers.", coords: { lat: 12.9985, lng: 77.5920 } },
@@ -156,10 +203,16 @@ const cityKnowledge: Record<string, CityInfo> = {
       { name: "Nandi Hills Sunrise Hike", description: "60 km drive to hilltop fort for a breathtaking sunrise experience." },
     ],
     transport: "Flight to Kempegowda International Airport (BLR)",
+    localDelicacies: [
+      { name: "Benne Masala Dosa", description: "Crispy rice crepe with a generous dollop of butter and potato filling.", image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=400" },
+      { name: "Mysore Pak", description: "Rich and melt-in-the-mouth sweet made with ghee, sugar, and gram flour.", image: "https://images.unsplash.com/photo-1589119634710-14e9f7823521?auto=format&fit=crop&q=80&w=400" }
+    ],
+    photoGallery: []
   },
   goa: {
     coords: { lat: 15.2993, lng: 74.1240 },
     theme: 'beach',
+    image: "https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?auto=format&fit=crop&q=80&w=1200",
     landmarks: [
       { name: "Basilica of Bom Jesus", description: "UNESCO World Heritage site housing the relics of St. Francis Xavier.", coords: { lat: 15.5009, lng: 73.9113 } },
       { name: "Fort Aguada", description: "17th-century Portuguese fort with a lighthouse, overlooking the sea.", coords: { lat: 15.4943, lng: 73.7743 } },
@@ -177,10 +230,18 @@ const cityKnowledge: Record<string, CityInfo> = {
       { name: "Spice Plantation Tour", description: "Guided walk through a working spice farm with a traditional Goan lunch." },
     ],
     transport: "Flight to Goa International Airport (GOI) or Vande Bharat Express",
+    localDelicacies: [
+      { name: "Prawn Gassi", description: "Traditional Goan coconut-based prawn curry.", image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&q=80&w=400" },
+      { name: "Bebinca", description: "Iconic 7-layer Goan pudding made with coconut milk and cardamom.", image: "https://images.unsplash.com/photo-1551024506-0bccd1315b81?auto=format&fit=crop&q=80&w=400" }
+    ],
+    photoGallery: [
+      "https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?auto=format&fit=crop&q=80&w=800"
+    ]
   },
   delhi: {
     coords: { lat: 28.7041, lng: 77.1025 },
     theme: 'heritage',
+    image: "https://images.unsplash.com/photo-1587474260584-1f3c8b4437ed?auto=format&fit=crop&q=80&w=1200",
     landmarks: [
       { name: "Red Fort", description: "Mughal emperor Shah Jahan's 17th-century red sandstone fortress.", coords: { lat: 28.6562, lng: 77.2410 } },
       { name: "India Gate", description: "War memorial arch, with a great lawn for evening picnics.", coords: { lat: 28.6129, lng: 77.2295 } },
@@ -198,10 +259,16 @@ const cityKnowledge: Record<string, CityInfo> = {
       { name: "Lotus Temple Visit", description: "Stunning Bahá'í House of Worship shaped like a blooming lotus flower." },
     ],
     transport: "Flight to Indira Gandhi International Airport (DEL)",
+    localDelicacies: [
+      { name: "Butter Chicken", description: "The legendary Delhi original - creamy, tomato-based gravy with tandoori chicken.", image: "https://images.unsplash.com/photo-1603894584373-5ac82b245005?auto=format&fit=crop&q=80&w=400" },
+      { name: "Chole Bhature", description: "Tangy chickpeas served with fluffy, deep-fried bread.", image: "https://images.unsplash.com/photo-1626132646529-5aa2ef9693bc?auto=format&fit=crop&q=80&w=400" }
+    ],
+    photoGallery: []
   },
   kashmir: {
     coords: { lat: 34.0837, lng: 74.7973 },
     theme: 'mountain',
+    image: "https://images.unsplash.com/photo-1610444317180-3330691e8bed?auto=format&fit=crop&q=80&w=1200",
     landmarks: [
       { name: "Dal Lake", description: "The iconic lake with floating gardens and colourful shikaras.", coords: { lat: 34.1015, lng: 74.8305 } },
       { name: "Gulmarg Gondola", description: "World's second-highest operating cable car with snow-capped Himalayan views.", coords: { lat: 34.0484, lng: 74.3805 } },
@@ -218,10 +285,16 @@ const cityKnowledge: Record<string, CityInfo> = {
       { name: "Houseboat Stay", description: "Spend a night on one of the ornate hand-carved cedar houseboats." },
     ],
     transport: "Flight to Sheikh ul-Alam International Airport (SXR)",
+    localDelicacies: [
+      { name: "Kashmiri Wazwan", description: "A multi-course formal meal, almost all courses are meat-based.", image: "https://images.unsplash.com/photo-1589118949245-7d40afbfa28e?auto=format&fit=crop&q=80&w=400" },
+      { name: "Roganjosh", description: "Aromatic lamb dish cooked with yogurt and Kashmiri chilies.", image: "https://images.unsplash.com/photo-1545243125-9685ed158f19?auto=format&fit=crop&q=80&w=400" }
+    ],
+    photoGallery: []
   },
   rajasthan: {
     coords: { lat: 26.9124, lng: 75.7873 },
     theme: 'heritage',
+    image: "https://images.unsplash.com/photo-1599661046289-e31897846e41?auto=format&fit=crop&q=80&w=1200",
     landmarks: [
       { name: "Amber Fort", description: "Majestic hilltop fort with stunning mirrored Sheesh Mahal interiors.", coords: { lat: 26.9855, lng: 75.8513 } },
       { name: "Hawa Mahal", description: "The iconic 'Palace of Winds' with 953 small latticed windows.", coords: { lat: 26.9239, lng: 75.8267 } },
@@ -239,10 +312,16 @@ const cityKnowledge: Record<string, CityInfo> = {
       { name: "Johari Bazaar Shopping", description: "Browse Jaipur's famous gem, jewellery, and blue pottery market." },
     ],
     transport: "Flight to Jaipur International Airport (JAI)",
+    localDelicacies: [
+      { name: "Dal Baati Churma", description: "Hard wheat rolls (baati) with spicy lentil curry (dal) and sweet crumbled wheat (churma).", image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&q=80&w=400" },
+      { name: "Laal Maas", description: "Fiery mutton curry cooked with local Mathania chilies.", image: "https://images.unsplash.com/photo-1545243125-9685ed158f19?auto=format&fit=crop&q=80&w=400" }
+    ],
+    photoGallery: []
   },
   chennai: {
     coords: { lat: 13.0827, lng: 80.2707 },
     theme: 'heritage',
+    image: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&q=80&w=1200",
     landmarks: [
       { name: "Marina Beach", description: "The world's second-longest natural beach, stretching over 13 km.", coords: { lat: 13.0504, lng: 80.2824 } },
       { name: "Kapaleeshwarar Temple", description: "Dravidian-style temple dedicated to Lord Shiva, with a colorful gopuram.", coords: { lat: 13.0338, lng: 80.2699 } },
@@ -260,46 +339,97 @@ const cityKnowledge: Record<string, CityInfo> = {
       { name: "Silk Saree Shopping in T. Nagar", description: "Chennai's premier shopping district for Kanchipuram silk sarees." },
     ],
     transport: "Flight to Chennai International Airport (MAA)",
+    localDelicacies: [
+      { name: "Masala Dosa", description: "Thin and crispy rice crepe filled with spiced potato masala.", image: "https://images.unsplash.com/photo-1630383249896-424e482df921?auto=format&fit=crop&q=80&w=400" },
+      { name: "Idli & Vada", description: "Steamed rice cakes and lentil doughnuts served with sambar and coconut chutney.", image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=400" }
+    ],
+    photoGallery: []
   },
 };
 
+import { supabase } from "@/lib/supabase";
+
 // Helper to find a trip based on query parameters
-export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): Trip => {
+export const getTripByRoute = async (fromStr?: string | null, toStr?: string | null, vibeStr?: string | null, budgetStr?: string | null): Promise<Trip> => {
   const origin = fromStr || "Delhi";
   const destination = toStr || "Kashmir";
+  const vibeParam = (vibeStr || 'balanced').toLowerCase();
+  
+  // Parse budget, default to 45k if not provided
+  const maxBudget = budgetStr ? parseInt(budgetStr) : 45000;
 
   const formattedFrom = origin.toLowerCase().trim();
   const formattedTo = destination.toLowerCase().trim();
 
-  const dates = generateDateRange(1, 5);
+  // Fetch city data from Supabase
+  const { data: cities } = await supabase
+    .from('cities')
+    .select('*')
+    .in('name', [formattedFrom, formattedTo]) as any;
 
-  // Lookup destination info from knowledge base, fallback to generic
-  const destInfo = cityKnowledge[formattedTo];
-  const originInfo = cityKnowledge[formattedFrom];
+  const destData = cities?.find((c: any) => c.name === formattedTo);
+  const originData = cities?.find((c: any) => c.name === formattedFrom);
 
-  const destCoords = destInfo?.coords || { lat: 20.5937, lng: 78.9629 };
-  const originCoords = originInfo?.coords || { lat: 20.5937, lng: 78.9629 };
-  const transport = destInfo?.transport || `Flight/Train to ${destination}`;
+  // Dynamic duration based on budget
+  let suggestedDuration = 5;
+  if (maxBudget < 15000) suggestedDuration = 3;
+  else if (maxBudget < 25000) suggestedDuration = 4;
+  
+  const dates = generateDateRange(1, suggestedDuration);
 
-  // Pick top 5 landmarks for map pins across 5 days
-  const landmarks = destInfo?.landmarks || [
-    { name: `${destination} Central`, description: "Heart of the city", coords: destCoords },
-    { name: `${destination} Old Town`, description: "Heritage district", coords: { lat: destCoords.lat + 0.01, lng: destCoords.lng + 0.01 } },
-    { name: `${destination} Market`, description: "Local market area", coords: { lat: destCoords.lat - 0.01, lng: destCoords.lng + 0.02 } },
-    { name: `${destination} Waterfront`, description: "Scenic waterfront", coords: { lat: destCoords.lat + 0.02, lng: destCoords.lng - 0.01 } },
-    { name: `${destination} Viewpoint`, description: "Panoramic lookout", coords: { lat: destCoords.lat - 0.02, lng: destCoords.lng - 0.02 } },
-  ];
+  // Lookup destination info from DB, fallback to knowledge base if missing
+  const destInfo: CityInfo = (destData ? {
+    coords: { lat: destData.coords_lat, lng: destData.coords_lng },
+    theme: destData.theme as any,
+    landmarks: (destData.photo_gallery as any) || cityKnowledge[formattedTo]?.landmarks || [],
+    restaurants: (destData.local_delicacies as any) || cityKnowledge[formattedTo]?.restaurants || [],
+    activities: cityKnowledge[formattedTo]?.activities || [],
+    transport: cityKnowledge[formattedTo]?.transport || `Flight/Train to ${destination}`,
+    image: destData.image_url || cityKnowledge[formattedTo]?.image || "",
+    localDelicacies: (destData.local_delicacies as any) || cityKnowledge[formattedTo]?.localDelicacies || [],
+    photoGallery: destData.photo_gallery || cityKnowledge[formattedTo]?.photoGallery || []
+  } : cityKnowledge[formattedTo]) || cityKnowledge['kashmir'];
 
-  const restaurants = destInfo?.restaurants || [
+  const originInfo: Partial<CityInfo> = originData ? { 
+    coords: { lat: originData.coords_lat, lng: originData.coords_lng } 
+  } : (cityKnowledge[formattedFrom] || { coords: { lat: 20.5937, lng: 78.9629 } });
+
+  const destCoords = destInfo.coords;
+  const originCoords = originInfo.coords || { lat: 20.5937, lng: 78.9629 };
+  const transport = destInfo.transport;
+  const landmarks = destInfo.landmarks;
+  const restaurants = destInfo.restaurants;
+
+  const delicacies = (destData?.local_delicacies as any) || [
     { name: "Local Heritage Restaurant", description: `Best traditional ${destination} cuisine.` },
     { name: "The Grand Café", description: "Popular local dining spot." },
     { name: "Street Food Corner", description: "Try authentic local street food." },
   ];
 
-  const activities = destInfo?.activities || [
-    { name: "City Guided Tour", description: `Explore the highlights of ${destination} with a local guide.` },
-    { name: "Sunset Viewpoint", description: "Catch the golden hour from the best vantage point in the city." },
-  ];
+  // Helper to adjust prices based on budget
+  // We use 40k as a "medium" budget benchmark
+  const budgetRatio = maxBudget / 40000;
+  
+  // Tier Analysis
+  const isBudgetUser = maxBudget < 20000;
+  const isLuxuryUser = maxBudget > 70000;
+
+  const getInitialAdjustedPrice = (base: number, type: string) => {
+    if (type === 'transit') {
+      if (isBudgetUser) return 1500 + Math.floor(Math.random() * 1000); // Realistic Bus/Train cost
+      if (maxBudget < 45000) return 4000 + Math.floor(Math.random() * 2000); // Economy Flight/AC Train
+      if (isLuxuryUser) return 12000 + Math.floor(Math.random() * 5000); // Premium Flight
+      return base;
+    }
+    if (type === 'accommodation') {
+       // Min 800 for budget, max scaling for luxury
+      return Math.floor(Math.max(800, base * Math.max(0.2, Math.min(3.0, budgetRatio))));
+    }
+    if (type === 'dining') {
+      return Math.floor(Math.max(300, base * Math.max(0.4, Math.min(2.0, budgetRatio))));
+    }
+    return Math.floor(Math.max(200, base * Math.max(0.5, Math.min(1.5, budgetRatio))));
+  };
 
   // Build the theme title
   const theme = destInfo?.theme || 'metro';
@@ -309,208 +439,174 @@ export const getTripByRoute = (fromStr?: string | null, toStr?: string | null): 
     theme === 'mountain' ? "Alpine & Nature Expedition" :
     "City Explorer";
 
+  // --- Shortest Path Optimization ---
+  const sortedLandmarks: typeof landmarks = [landmarks[0]];
+  const pool = landmarks.slice(1);
+  let currentCoords = landmarks[0].coords;
+
+  while (pool.length > 0) {
+    let closestIdx = 0;
+    let minDistance = Infinity;
+    for (let i = 0; i < pool.length; i++) {
+      const dist = Math.sqrt(Math.pow(pool[i].coords.lat - currentCoords.lat, 2) + Math.pow(pool[i].coords.lng - currentCoords.lng, 2));
+      if (dist < minDistance) { minDistance = dist; closestIdx = i; }
+    }
+    const next = pool.splice(closestIdx, 1)[0];
+    sortedLandmarks.push(next);
+    currentCoords = next.coords;
+  }
+
+  const days: ItineraryDay[] = [];
+  
+  // Day 1: Arrival
+  days.push({
+    id: "dyn-day-1",
+    dayNumber: 1,
+    date: dates[0],
+    title: `Arrival & ${theme === 'beach' ? 'Beach' : 'Heritage'} Start`,
+    description: `Touch down and begin your ${vibeParam} centered journey in ${destination}.`,
+    location: sortedLandmarks[0].coords,
+    headerImage: destInfo?.image || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=1200",
+    forecast: { temp: 30, condition: 'Sunny' },
+    activities: [
+      {
+        id: "dy1a", time: "9:00 AM",
+        title: isBudgetUser ? `State Bus to ${destination}` : (isLuxuryUser ? `Direct Flight to ${destination}` : transport),
+        description: isBudgetUser ? `Scenic budget-friendly local transport.` : `Swift travel from ${origin} to ${destination}.`,
+        type: "transit",
+        location: originCoords,
+        priceINR: getInitialAdjustedPrice(7500, 'transit'),
+      },
+      {
+        id: "dy1b", time: "2:00 PM",
+        title: isLuxuryUser ? "Luxury Suite Check-in" : (isBudgetUser ? "Hostel/Guesthouse Check-in" : "Boutique Hotel Check-in"),
+        description: isLuxuryUser ? "Relax with premium amenities and city views." : "Settle into your comfortable stay.",
+        type: "accommodation",
+        location: { lat: sortedLandmarks[0].coords.lat + 0.005, lng: sortedLandmarks[0].coords.lng - 0.005 },
+        priceINR: getInitialAdjustedPrice(5000, 'accommodation'),
+      },
+      {
+        id: "dy1c", time: "4:30 PM",
+        title: sortedLandmarks[0].name,
+        description: sortedLandmarks[0].description,
+        type: "sightseeing",
+        location: sortedLandmarks[0].coords,
+        priceINR: getInitialAdjustedPrice(350, 'sightseeing'),
+      },
+      {
+        id: "dy1d", time: "8:00 PM",
+        title: isBudgetUser ? "Famous Street Food Lane" : (isLuxuryUser ? "Gourmet Fine Dining" : restaurants[0].name),
+        description: isBudgetUser ? "Taste the most authentic local flavors from street vendors." : (isLuxuryUser ? "A curated multi-course culinary experience." : restaurants[0].description),
+        type: "dining",
+        location: { lat: sortedLandmarks[0].coords.lat + 0.003, lng: sortedLandmarks[0].coords.lng - 0.004 },
+        priceINR: getInitialAdjustedPrice(1200, 'dining'),
+      }
+    ]
+  });
+
+  // Intermediate Days
+  for (let i = 1; i < suggestedDuration - 1; i++) {
+    const landmarkIdx = (i * 2) % sortedLandmarks.length;
+    days.push({
+      id: `dyn-day-${i+1}`,
+      dayNumber: i + 1,
+      date: dates[i],
+      title: `${destination} Deep Dive`,
+      description: `Exploring the hidden gems and ${vibeParam} spots of the city.`,
+      location: sortedLandmarks[landmarkIdx].coords,
+      headerImage: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=1200",
+      forecast: { temp: 28, condition: 'Sunny' },
+      activities: [
+        {
+          id: `dy${i+1}a`, time: "10:00 AM",
+          title: sortedLandmarks[landmarkIdx].name,
+          description: sortedLandmarks[landmarkIdx].description,
+          type: "sightseeing",
+          location: sortedLandmarks[landmarkIdx].coords,
+          priceINR: getInitialAdjustedPrice(500, 'sightseeing'),
+        },
+        {
+          id: `dy${i+1}b`, time: "1:30 PM",
+          title: isBudgetUser ? "Local Eatery Selection" : restaurants[i % restaurants.length].name,
+          description: isBudgetUser ? "Quick and delicious local lunch." : restaurants[i % restaurants.length].description,
+          type: "dining",
+          location: { lat: sortedLandmarks[landmarkIdx].coords.lat + 0.002, lng: sortedLandmarks[landmarkIdx].coords.lng + 0.002 },
+          priceINR: getInitialAdjustedPrice(800, 'dining'),
+        },
+        {
+          id: `dy${i+1}c`, time: "4:00 PM",
+          title: vibeParam === 'adventure' ? "Off-road Exploration" : "Cultural Workshop",
+          description: isLuxuryUser ? "Private guided experience with local experts." : "Engage with the local culture and history.",
+          type: vibeParam === 'adventure' ? "activity" : "sightseeing",
+          location: { lat: sortedLandmarks[landmarkIdx].coords.lat - 0.005, lng: sortedLandmarks[landmarkIdx].coords.lng + 0.012 },
+          priceINR: getInitialAdjustedPrice(1500, 'activity'),
+        }
+      ]
+    });
+  }
+
+  // Last Day: Departure
+  const lastDayIdx = suggestedDuration - 1;
+  days.push({
+    id: `dyn-day-${suggestedDuration}`,
+    dayNumber: suggestedDuration,
+    date: dates[lastDayIdx],
+    title: "Final Moments",
+    description: "Collecting souvenirs and memories before the journey home.",
+    location: originCoords,
+    headerImage: "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&q=80&w=1200",
+    forecast: { temp: 25, condition: 'Mist' },
+    activities: [
+      {
+        id: `dy${suggestedDuration}a`, time: "9:00 AM",
+        title: isLuxuryUser ? "Champagne Brunch" : "Traditional Breakfast",
+        description: "Enjoy your final morning at a leisurely pace.",
+        type: "dining",
+        location: { lat: destCoords.lat + 0.001, lng: destCoords.lng - 0.001 },
+        priceINR: getInitialAdjustedPrice(600, 'dining'),
+      },
+      {
+        id: `dy${suggestedDuration}b`, time: "3:00 PM",
+        title: isBudgetUser ? `Return Bus to ${origin}` : `Departure for ${origin}`,
+        description: `Leaving ${destination} after an unforgettable ${suggestedDuration}-day trip.`,
+        type: "transit",
+        location: originCoords,
+        priceINR: getInitialAdjustedPrice(7500, 'transit'),
+      }
+    ]
+  });
+
+  // --- Final Pass: Global Scaling to strictly fit budget ---
+  let currentTotal = 0;
+  days.forEach(day => day.activities.forEach(act => currentTotal += (act.priceINR || 0)));
+
+  if (currentTotal > maxBudget) {
+    const scaleFactor = (maxBudget * 0.96) / currentTotal; // Slightly tighter buffer
+    days.forEach(day => {
+      day.activities.forEach(act => {
+        if (act.priceINR) {
+          act.priceINR = Math.max(
+            act.type === 'dining' ? 150 : (act.type === 'accommodation' ? 500 : 50),
+            Math.floor(act.priceINR * scaleFactor)
+          );
+        }
+      });
+    });
+  }
+
+  // Refresh total after scaling
+  let finalTotalPrice = 0;
+  days.forEach(day => day.activities.forEach(act => finalTotalPrice += (act.priceINR || 0)));
+
   return {
-    id: `dynamic-${formattedFrom}-${formattedTo}`,
+    id: `dynamic-${formattedFrom}-${formattedTo}-${vibeParam}-${maxBudget}`,
     from: origin,
     to: destination,
     title: `${origin} to ${destination} ${themeTitle}`,
-    duration: 5,
-    days: [
-      {
-        id: "dyn-day-1",
-        dayNumber: 1,
-        date: dates[0],
-        title: `Arrival in ${destination}`,
-        description: `Begin your journey from ${origin}. Check in and take your first steps exploring ${destination}.`,
-        location: landmarks[0].coords,
-        activities: [
-          {
-            id: "dy1a", time: "9:00 AM",
-            title: transport,
-            description: `Depart ${origin} and arrive in ${destination}.`,
-            type: "transit",
-            location: originCoords,
-            priceINR: 7500,
-          },
-          {
-            id: "dy1b", time: "2:00 PM",
-            title: "Hotel Check-in & Freshen Up",
-            description: "Settle into your carefully selected accommodation.",
-            type: "accommodation",
-            location: { lat: destCoords.lat + 0.005, lng: destCoords.lng - 0.005 },
-            priceINR: 5000,
-          },
-          {
-            id: "dy1c", time: "4:30 PM",
-            title: landmarks[0].name,
-            description: landmarks[0].description,
-            type: "sightseeing",
-            location: landmarks[0].coords,
-            priceINR: 350,
-          },
-          {
-            id: "dy1d", time: "8:00 PM",
-            title: restaurants[0].name,
-            description: restaurants[0].description,
-            type: "dining",
-            location: { lat: landmarks[0].coords.lat + 0.003, lng: landmarks[0].coords.lng - 0.004 },
-            priceINR: 850,
-          }
-        ]
-      },
-      {
-        id: "dyn-day-2",
-        dayNumber: 2,
-        date: dates[1],
-        title: `${destination} Highlights`,
-        description: `A full day exploring the most iconic sights of ${destination}.`,
-        location: landmarks[1]?.coords || { lat: destCoords.lat + 0.01, lng: destCoords.lng },
-        activities: [
-          {
-            id: "dy2a", time: "9:00 AM",
-            title: landmarks[1]?.name || `${destination} Morning Exploration`,
-            description: landmarks[1]?.description || `Explore the heart of ${destination}.`,
-            type: "sightseeing",
-            location: landmarks[1]?.coords,
-            priceINR: 500,
-          },
-          {
-            id: "dy2b", time: "12:30 PM",
-            title: restaurants[1]?.name || "Authentic Local Lunch",
-            description: restaurants[1]?.description || `Taste the local specialties of ${destination}.`,
-            type: "dining",
-            location: landmarks[1]?.coords ? { lat: landmarks[1].coords.lat + 0.003, lng: landmarks[1].coords.lng + 0.003 } : undefined,
-            priceINR: 700,
-          },
-          {
-            id: "dy2c", time: "3:00 PM",
-            title: landmarks[2]?.name || "Afternoon Cultural Visit",
-            description: landmarks[2]?.description || "Explore local culture and heritage.",
-            type: "sightseeing",
-            location: landmarks[2]?.coords,
-            priceINR: 400,
-          },
-          {
-            id: "dy2d", time: "6:30 PM",
-            title: activities[0]?.name || "Evening Activity",
-            description: activities[0]?.description || `Enjoy a popular local activity.`,
-            type: "activity",
-            location: landmarks[2]?.coords ? { lat: landmarks[2].coords.lat - 0.002, lng: landmarks[2].coords.lng + 0.002 } : undefined,
-            priceINR: 1200,
-          }
-        ]
-      },
-      {
-        id: "dyn-day-3",
-        dayNumber: 3,
-        date: dates[2],
-        title: "Hidden Gems & Local Culture",
-        description: `Go deeper into the unique culture and experiences of ${destination}.`,
-        location: landmarks[2]?.coords || { lat: destCoords.lat - 0.01, lng: destCoords.lng + 0.01 },
-        activities: [
-          {
-            id: "dy3a", time: "9:30 AM",
-            title: landmarks[3]?.name || "Day Excursion",
-            description: landmarks[3]?.description || `Explore a lesser-known gem of ${destination}.`,
-            type: "activity",
-            location: landmarks[3]?.coords,
-            priceINR: 800,
-          },
-          {
-            id: "dy3b", time: "1:00 PM",
-            title: restaurants[2]?.name || "Local Market Lunch",
-            description: restaurants[2]?.description || "Taste authentic street food and snacks.",
-            type: "dining",
-            location: landmarks[3]?.coords ? { lat: landmarks[3].coords.lat + 0.004, lng: landmarks[3].coords.lng - 0.003 } : undefined,
-            priceINR: 600,
-          },
-          {
-            id: "dy3c", time: "3:30 PM",
-            title: landmarks[4]?.name || "Scenic Spot",
-            description: landmarks[4]?.description || "A beautiful viewpoint or natural landmark.",
-            type: "sightseeing",
-            location: landmarks[4]?.coords,
-            priceINR: 300,
-          },
-          {
-            id: "dy3d", time: "7:00 PM",
-            title: "Cultural Evening Experience",
-            description: `Enjoy local art, music, or a cultural performance in ${destination}.`,
-            type: "activity",
-            location: landmarks[4]?.coords ? { lat: landmarks[4].coords.lat - 0.003, lng: landmarks[4].coords.lng + 0.003 } : undefined,
-            priceINR: 1500,
-          }
-        ]
-      },
-      {
-        id: "dyn-day-4",
-        dayNumber: 4,
-        date: dates[3],
-        title: "Leisure & Shopping",
-        description: `A relaxed day for shopping, cafes, and exploring at your own pace.`,
-        location: landmarks[3]?.coords || { lat: destCoords.lat + 0.02, lng: destCoords.lng - 0.01 },
-        activities: [
-          {
-            id: "dy4a", time: "10:30 AM",
-            title: activities[1]?.name || "Local Shopping & Souvenirs",
-            description: activities[1]?.description || `Browse the markets of ${destination} for unique souvenirs.`,
-            type: "activity",
-            location: { lat: destCoords.lat + 0.008, lng: destCoords.lng + 0.006 },
-            priceINR: 2500,
-          },
-          {
-            id: "dy4b", time: "1:30 PM",
-            title: "Cafe Hopping",
-            description: `Discover award-winning local cafes and ${destination}'s coffee culture.`,
-            type: "dining",
-            location: { lat: destCoords.lat + 0.006, lng: destCoords.lng - 0.004 },
-            priceINR: 550,
-          },
-          {
-            id: "dy4c", time: "5:00 PM",
-            title: "Sunset at a Scenic Spot",
-            description: `Watch the sun set over ${destination} from a breathtaking vantage point.`,
-            type: "sightseeing",
-            location: { lat: destCoords.lat - 0.01, lng: destCoords.lng + 0.006 },
-            priceINR: 0,
-          }
-        ]
-      },
-      {
-        id: "dyn-day-5",
-        dayNumber: 5,
-        date: dates[4],
-        title: "Final Morning & Departure",
-        description: `A final leisurely morning before heading back to ${origin}.`,
-        location: landmarks[4]?.coords || { lat: destCoords.lat - 0.02, lng: destCoords.lng - 0.02 },
-        activities: [
-          {
-            id: "dy5a", time: "9:00 AM",
-            title: "Final Morning at Leisure",
-            description: `Take one last slow walk through the streets of ${destination}.`,
-            type: "activity",
-            location: { lat: destCoords.lat + 0.003, lng: destCoords.lng - 0.007 },
-            priceINR: 0,
-          },
-          {
-            id: "dy5b", time: "11:30 AM",
-            title: "Farewell Meal",
-            description: `One last authentic meal before leaving ${destination} behind.`,
-            type: "dining",
-            location: { lat: destCoords.lat - 0.006, lng: destCoords.lng + 0.004 },
-            priceINR: 1000,
-          },
-          {
-            id: "dy5c", time: "3:00 PM",
-            title: `Return to ${origin}`,
-            description: `Head to the airport or station for your journey back to ${origin}.`,
-            type: "transit",
-            location: originCoords,
-            priceINR: 7500,
-          }
-        ]
-      }
-    ],
-    totalPriceINR: 7500 + 5000 + 350 + 850 + 500 + 700 + 400 + 1200 + 800 + 600 + 300 + 1500 + 2500 + 550 + 0 + 0 + 1000 + 7500,
+    duration: days.length,
+    days: days,
+    totalPriceINR: finalTotalPrice,
+    localDelicacies: destInfo?.localDelicacies || [],
+    photoGallery: destInfo?.photoGallery || [],
   };
 };

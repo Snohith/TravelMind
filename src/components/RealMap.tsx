@@ -1,29 +1,12 @@
 "use client";
 
 import React, { useEffect, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { ItineraryDay } from "@/data/mock-itinerary";
 
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
-
-// Fix for default Leaflet marker icons in Next.js
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-
-L.Icon.Default.mergeOptions({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  iconRetinaUrl: typeof markerIcon2x === 'string' ? markerIcon2x : (markerIcon2x as any).src,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  iconUrl: typeof markerIcon === 'string' ? markerIcon : (markerIcon as any).src,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  shadowUrl: typeof markerShadow === 'string' ? markerShadow : (markerShadow as any).src,
-});
-
-// Custom Icon for Active vs Inactive
+// Custom Icon for Active vs Inactive Days
 const createCustomIcon = (isActive: boolean, dayNumber: number) => {
   return L.divIcon({
     className: 'custom-leaflet-marker',
@@ -31,7 +14,7 @@ const createCustomIcon = (isActive: boolean, dayNumber: number) => {
       <div class="relative w-8 h-8 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 ${
         isActive 
           ? 'bg-emerald-500 text-neutral-900 shadow-emerald-500/50 scale-125 z-50 ring-4 ring-emerald-500/30' 
-          : 'bg-neutral-900 border border-white/20 text-white'
+          : 'bg-neutral-800 border border-white/10 text-neutral-400'
       }">
         <span class="text-sm font-bold">${dayNumber}</span>
       </div>
@@ -39,6 +22,31 @@ const createCustomIcon = (isActive: boolean, dayNumber: number) => {
     iconSize: [32, 32],
     iconAnchor: [16, 16],
     popupAnchor: [0, -16],
+  });
+};
+
+// Custom Icon for Activities
+const createActivityIcon = (type: string, isActive: boolean) => {
+  const getColors = () => {
+    switch(type) {
+      case 'dining': return isActive ? 'bg-orange-500' : 'bg-orange-900/50';
+      case 'sightseeing': return isActive ? 'bg-blue-500' : 'bg-blue-900/50';
+      case 'transit': return isActive ? 'bg-zinc-500' : 'bg-zinc-700/50';
+      case 'accommodation': return isActive ? 'bg-purple-500' : 'bg-purple-900/50';
+      default: return isActive ? 'bg-emerald-500' : 'bg-emerald-900/50';
+    }
+  };
+
+  return L.divIcon({
+    className: 'custom-activity-marker',
+    html: `
+      <div class="w-5 h-5 rounded-full border-2 border-white/20 shadow-lg flex items-center justify-center ${getColors()} transition-all duration-300 ${isActive ? 'scale-110 z-30' : 'scale-90 opacity-60'}">
+        <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+      </div>
+    `,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -10],
   });
 };
 
@@ -111,6 +119,13 @@ export default function RealMap({ itinerary, activeDayId, setActiveDayId, focuse
   // after the initial render, so a new key is the only reliable reset approach).
   const mapKey = `${itinerary[0]?.location.lat}-${itinerary[0]?.location.lng}`;
 
+  // Calculate coordinates for the day's route polyline
+  const routePositions = useMemo(() => {
+    return activeDay.activities
+      .filter(act => act.location)
+      .map(act => [act.location!.lat, act.location!.lng] as L.LatLngExpression);
+  }, [activeDay]);
+
   return (
     <div className="w-full h-full relative z-0">
       <MapContainer 
@@ -131,6 +146,35 @@ export default function RealMap({ itinerary, activeDayId, setActiveDayId, focuse
         <MapUpdater activeDay={activeDay} focusedLocation={focusedLocation} />
         <MapInvalidator />
 
+        {/* Route Visualization - Polyline */}
+        {routePositions.length > 1 && (
+          <>
+            {/* Outline/Glow Effect Polyline */}
+            <Polyline 
+              positions={routePositions} 
+              pathOptions={{ 
+                color: '#10b981', 
+                weight: 6, 
+                opacity: 0.2,
+                lineCap: 'round',
+                lineJoin: 'round'
+              }} 
+            />
+            {/* Main Primary Polyline */}
+            <Polyline 
+              positions={routePositions} 
+              pathOptions={{ 
+                color: '#10b981', 
+                weight: 2, 
+                opacity: 0.8,
+                dashArray: '8, 12',
+                lineCap: 'round',
+                lineJoin: 'round'
+              }} 
+            />
+          </>
+        )}
+
         {/* Focused activity pin - shown when user clicks a specific activity */}
         {focusedLocation && (
           <Marker
@@ -150,6 +194,30 @@ export default function RealMap({ itinerary, activeDayId, setActiveDayId, focuse
           </Marker>
         )}
 
+        {/* Activity markers for the active day */}
+        {activeDay.activities.map((activity) => {
+          if (!activity.location || (focusedLocation && activity.location.lat === focusedLocation.lat && activity.location.lng === focusedLocation.lng)) {
+            return null;
+          }
+          return (
+            <Marker
+              key={activity.id}
+              position={[activity.location.lat, activity.location.lng]}
+              icon={createActivityIcon(activity.type, true)}
+            >
+              <Popup className="custom-popup" closeButton={false} autoPan={false}>
+                <div className="bg-neutral-900 text-white p-2 rounded-xl border border-white/10 shadow-2xl min-w-[150px]">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-tighter">{activity.time}</span>
+                    <span className="text-[10px] text-emerald-400 font-bold uppercase">{activity.type}</span>
+                  </div>
+                  <h4 className="font-bold text-sm">{activity.title}</h4>
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
+
         {itinerary.map((day) => {
           const isActive = day.id === activeDayId;
           return (
@@ -160,6 +228,7 @@ export default function RealMap({ itinerary, activeDayId, setActiveDayId, focuse
               eventHandlers={{
                 click: () => setActiveDayId(day.id),
               }}
+              zIndexOffset={isActive ? 100 : 0}
             >
               <Popup className="custom-popup" closeButton={false} autoPan={false}>
                 <div className="bg-neutral-900 text-white p-2 rounded-xl border border-white/10 shadow-2xl min-w-[200px]">
