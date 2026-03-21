@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   // Default to homepage to prevent confusing redirects
-  let redirect = requestUrl.searchParams.get("redirect") || "/";
+  let redirect = requestUrl.searchParams.get("redirect") || "/dashboard";
 
   // SECURITY: Prevent Open Redirect attacks
   // Only allow relative paths starting with /

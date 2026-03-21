@@ -2,79 +2,97 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, MapPin, Users, Sparkles, IndianRupee } from "lucide-react";
+import { ChevronDown, MapPin, Users, Sparkles, IndianRupee, Calendar as CalendarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { BouncingDots } from "@/components/ui/Loader";
 import { Button } from "@/components/ui/button";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { DayPicker, DateRange } from "react-day-picker";
+import "react-day-picker/dist/style.css";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
-/**
- * The core search form component where users enter their trip preferences.
- * 
- * What it does: Displays a form for 'From', 'To', 'Guests', 'Vibe', and 'Budget'.
- * Inputs: None (it manages its own local state).
- * Outputs: Renders the interactive UI form.
- * 
- * Why it exists: This is the starting point of the app where the user tells us what kind of trip they want.
- */
+const searchSchema = z.object({
+  from: z.string().min(2, "Select origin"),
+  to: z.string().min(2, "Select destination"),
+  budget: z.number().min(1000, "Minimum ₹1,000 required"),
+  adults: z.number().min(1),
+  children: z.number().min(0),
+  rooms: z.number().min(1),
+  vibe: z.string(),
+  dates: z.object({
+    from: z.date(),
+    to: z.date(),
+  }).refine(data => data.to >= data.from, {
+    message: "End date cannot be before start date",
+    path: ["to"]
+  })
+});
+
+type SearchValues = z.infer<typeof searchSchema>;
+
 export default function SearchForm() {
   const router = useRouter();
   const { user } = useAuth();
   
-  const [fromCity, setFromCity] = useState("Bangalore");
-  const [toCity, setToCity] = useState("Goa");
-  
   const [fromOpen, setFromOpen] = useState(false);
   const [toOpen, setToOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-
-  const [guestsOpen, setGuestsOpen] = useState(false);
-  const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(0);
-  const [rooms, setRooms] = useState(1);
-
-  const [vibe, setVibe] = useState("Balanced");
-  const [vibeOpen, setVibeOpen] = useState(false);
-  const vibes = ["Adventure", "Relaxing", "Cultural", "Luxury", "Balanced"];
-
-  const [budget, setBudget] = useState("35000");
-
   const [fromSearch, setFromSearch] = useState("");
   const [toSearch, setToSearch] = useState("");
+  const [guestsOpen, setGuestsOpen] = useState(false);
+  const [vibeOpen, setVibeOpen] = useState(false);
+  const [dateOpen, setDateOpen] = useState(false);
 
   const cities = ["Hyderabad", "Warangal", "Vizag", "Mumbai", "Bangalore", "Goa", "Delhi", "Chennai", "Kashmir", "Rajasthan", "Pune", "Kolkata", "Ahmedabad", "Lucknow", "Jaipur", "Kochi", "Manali", "Leh", "Shimla", "Agra"];
+  const vibes = ["Adventure", "Relaxing", "Cultural", "Luxury", "Balanced"];
+
+  const { register, handleSubmit, control, setValue, watch, formState: { errors } } = useForm<SearchValues>({
+    resolver: zodResolver(searchSchema),
+    defaultValues: {
+      from: "Bangalore",
+      to: "Goa",
+      budget: 35000 as any,
+      adults: 2,
+      children: 0,
+      rooms: 1,
+      vibe: "Balanced",
+      dates: {
+        from: new Date(),
+        to: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // +5 days
+      }
+    }
+  });
+
+  const fromCity = watch("from");
+  const toCity = watch("to");
+  const vibe = watch("vibe");
+  const budget = watch("budget");
+  const adults = watch("adults");
+  const children = watch("children");
+  const rooms = watch("rooms");
+  const dateRange = watch("dates");
 
   const filteredFromCities = cities.filter(c => c.toLowerCase().includes(fromSearch.toLowerCase()));
   const filteredToCities = cities.filter(c => c.toLowerCase().includes(toSearch.toLowerCase()));
 
-  /**
-   * Handles what happens when the user clicks the "EXPLORE THE WORLD" button.
-   * 
-   * @param e - The form submission event (Input)
-   * @returns void - It redirects the user rather than returning a value (Output)
-   * 
-   * Why it exists: Puts all the user's choices into the URL and sends them to the
-   * itinerary page where the trip will actually be generated.
-   */
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!fromCity || !toCity) return;
-
+  const onSubmit = async (data: SearchValues) => {
     setIsGenerating(true);
-
     try {
       const params = new URLSearchParams({ 
-        from: fromCity, 
-        to: toCity,
-        vibe: vibe.toLowerCase(),
-        budget: budget
+        from: data.from, 
+        to: data.to,
+        vibe: data.vibe.toLowerCase(),
+        budget: data.budget.toString(),
+        start: data.dates.from.toISOString(),
+        end: data.dates.to.toISOString()
       });
       router.push(`/itinerary?${params.toString()}`);
     } catch (error) {
       console.error("Selection error:", error);
-      // Fallback
-      const params = new URLSearchParams({ from: fromCity, to: toCity, vibe, budget });
-      router.push(`/itinerary?${params.toString()}`);
     } finally {
       setIsGenerating(false);
     }
@@ -88,10 +106,10 @@ export default function SearchForm() {
       className="relative z-10 w-full max-w-6xl mx-auto mt-28 px-2 sm:px-0"
     >
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit) as any}
         className="relative bg-white dark:bg-zinc-950 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-visible"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 divide-y lg:divide-y-0 sm:divide-x divide-zinc-200 dark:divide-zinc-800">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 divide-y lg:divide-y-0 sm:divide-x divide-zinc-200 dark:divide-zinc-800">
           
           {/* From City */}
           <div className="relative">
@@ -102,12 +120,13 @@ export default function SearchForm() {
               </label>
               <button
                 type="button"
-                onClick={() => { setFromOpen(!fromOpen); setFromSearch(""); setToOpen(false); setGuestsOpen(false); setVibeOpen(false); }}
+                onClick={() => { setFromOpen(!fromOpen); setFromSearch(""); setToOpen(false); setGuestsOpen(false); setVibeOpen(false); setDateOpen(false); }}
                 className="block w-full text-left text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none leading-tight truncate"
               >
-                {fromCity || <span className="text-zinc-400">Origin City</span>}
+                {fromCity || <span className="text-zinc-400">Origin</span>}
               </button>
               <span className="text-xs font-medium text-zinc-400 mt-1">Indian Locations</span>
+              {errors.from && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase">{errors.from.message}</p>}
             </div>
 
             <AnimatePresence>
@@ -131,7 +150,7 @@ export default function SearchForm() {
                       <button
                         key={city}
                         type="button"
-                        onClick={() => { setFromCity(city); setFromOpen(false); }}
+                        onClick={() => { setValue("from", city, { shouldValidate: true }); setFromOpen(false); }}
                         className="w-full text-left px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl font-medium text-zinc-900 dark:text-zinc-100 transition-colors text-sm"
                       >
                         {city}
@@ -154,12 +173,13 @@ export default function SearchForm() {
               </label>
               <button
                 type="button"
-                onClick={() => { setToOpen(!toOpen); setToSearch(""); setFromOpen(false); setGuestsOpen(false); setVibeOpen(false); }}
+                onClick={() => { setToOpen(!toOpen); setToSearch(""); setFromOpen(false); setGuestsOpen(false); setVibeOpen(false); setDateOpen(false); }}
                 className="block w-full text-left text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none leading-tight truncate"
               >
-                {toCity || <span className="text-zinc-400">Destination City</span>}
+                {toCity || <span className="text-zinc-400">Destination</span>}
               </button>
               <span className="text-xs font-medium text-zinc-400 mt-1">Indian Locations</span>
+              {errors.to && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase">{errors.to.message}</p>}
             </div>
 
             <AnimatePresence>
@@ -183,7 +203,7 @@ export default function SearchForm() {
                       <button
                         key={city}
                         type="button"
-                        onClick={() => { setToCity(city); setToOpen(false); }}
+                        onClick={() => { setValue("to", city, { shouldValidate: true }); setToOpen(false); }}
                         disabled={fromCity === city}
                         className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-colors text-sm ${fromCity === city ? 'opacity-40 cursor-not-allowed text-zinc-400' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100'}`}
                       >
@@ -198,11 +218,80 @@ export default function SearchForm() {
             </AnimatePresence>
           </div>
 
+          {/* Date Picker */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => { setDateOpen(!dateOpen); setFromOpen(false); setToOpen(false); setGuestsOpen(false); setVibeOpen(false); }}
+              className="w-full text-left px-4 py-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors flex flex-col justify-center border-t sm:border-t-0"
+            >
+              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                <CalendarIcon className="w-3 h-3" /> Dates
+                <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${dateOpen ? 'rotate-180' : ''}`} />
+              </label>
+              <div className="flex items-baseline gap-1.5 leading-tight truncate">
+                <span className="text-sm font-black text-zinc-900 dark:text-zinc-100">
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}
+                      </>
+                    ) : (
+                      format(dateRange.from, "LLL dd")
+                    )
+                  ) : (
+                    <span>Pick dates</span>
+                  )}
+                </span>
+              </div>
+              <span className="text-xs font-medium text-zinc-400 mt-1">Duration</span>
+              {errors.dates?.to && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase">{errors.dates.to.message}</p>}
+            </button>
+
+            <AnimatePresence>
+              {dateOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-1 p-4 bg-white dark:bg-zinc-950 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-zinc-200 dark:border-zinc-800 z-[70]"
+                >
+                  <Controller
+                    control={control}
+                    name="dates"
+                    render={({ field }) => (
+                      <DayPicker
+                        mode="range"
+                        selected={field.value as DateRange}
+                        onSelect={(range) => {
+                          field.onChange(range);
+                          // We don't close on first click for range selection
+                        }}
+                        numberOfMonths={1}
+                        className="dark:text-white"
+                      />
+                    )}
+                  />
+                  <div className="flex justify-between items-center mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Select your window</p>
+                    <Button 
+                      type="button" 
+                      onClick={() => setDateOpen(false)}
+                      className="rounded-full h-8 px-4 text-xs font-bold bg-zinc-900 dark:bg-white dark:text-zinc-950"
+                    >
+                      Done
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           {/* Guests & Rooms */}
           <div className="relative">
             <button
               type="button"
-              onClick={() => { setGuestsOpen(!guestsOpen); setFromOpen(false); setToOpen(false); setVibeOpen(false); }}
+              onClick={() => { setGuestsOpen(!guestsOpen); setFromOpen(false); setToOpen(false); setVibeOpen(false); setDateOpen(false); }}
               className="w-full text-left px-4 py-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors flex flex-col justify-center border-t sm:border-t-0"
             >
               <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5 flex items-center gap-1 pointer-events-none">
@@ -226,9 +315,9 @@ export default function SearchForm() {
                 >
                   <div className="space-y-4">
                     {[
-                      { label: "Rooms", sub: null, value: rooms, setter: setRooms, min: 1 },
-                      { label: "Adults", sub: "> 12 Years", value: adults, setter: setAdults, min: 1 },
-                      { label: "Children", sub: "2 – 12 Years", value: children, setter: setChildren, min: 0 },
+                       { label: "Rooms", sub: null, value: rooms, setter: (v: number) => setValue("rooms", v), min: 1 },
+                      { label: "Adults", sub: "> 12 Years", value: adults, setter: (v: number) => setValue("adults", v), min: 1 },
+                      { label: "Children", sub: "2 – 12 Years", value: children, setter: (v: number) => setValue("children", v), min: 0 },
                     ].map((item) => (
                       <div key={item.label} className="flex items-center justify-between">
                         <div>
@@ -264,7 +353,7 @@ export default function SearchForm() {
               </label>
               <button
                 type="button"
-                onClick={() => { setVibeOpen(!vibeOpen); setFromOpen(false); setToOpen(false); setGuestsOpen(false); }}
+                onClick={() => { setVibeOpen(!vibeOpen); setFromOpen(false); setToOpen(false); setGuestsOpen(false); setDateOpen(false); }}
                 className="block w-full text-left text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none leading-tight truncate"
               >
                 {vibe || <span className="text-zinc-400">Select Vibe</span>}
@@ -284,7 +373,7 @@ export default function SearchForm() {
                     <button
                       key={v}
                       type="button"
-                      onClick={() => { setVibe(v); setVibeOpen(false); }}
+                      onClick={() => { setValue("vibe", v); setVibeOpen(false); }}
                       className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-colors text-sm ${vibe === v ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100'}`}
                     >
                       {v}
@@ -303,13 +392,13 @@ export default function SearchForm() {
               </label>
               <input
                 type="number"
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
-                onFocus={() => { setFromOpen(false); setToOpen(false); setGuestsOpen(false); setVibeOpen(false); }}
+                {...register("budget", { valueAsNumber: true })}
+                onFocus={() => { setFromOpen(false); setToOpen(false); setGuestsOpen(false); setVibeOpen(false); setDateOpen(false); }}
                 className="block w-full text-left text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100 bg-transparent outline-none leading-tight"
                 placeholder="Amount"
               />
               <span className="text-xs font-medium text-zinc-400 mt-1">Max per trip</span>
+              {errors.budget && <p className="text-[10px] text-red-500 font-bold mt-1 uppercase">{errors.budget.message}</p>}
             </div>
           </div>
         </div>

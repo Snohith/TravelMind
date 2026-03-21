@@ -8,7 +8,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 
 // Since we're using "useSearchParams", it needs to be wrapped in a suspense boundary
-import { getTripById, getTripPreviewAction } from "@/app/actions/trips";
+import { getTripById, generateTrip } from "@/app/actions/trips";
 import { type Trip } from "@/data/mock-itinerary";
 
 function ItineraryContent() {
@@ -18,6 +18,8 @@ function ItineraryContent() {
   const toParam = searchParams.get('to');
   const vibeParam = searchParams.get('vibe');
   const budgetParam = searchParams.get('budget');
+  const startParam = searchParams.get('start');
+  const endParam = searchParams.get('end');
   const { user, isLoaded } = useAuth();
   const router = useRouter();
 
@@ -42,8 +44,12 @@ function ItineraryContent() {
         const data = await getTripById(tripId);
         setTrip(data);
       } else {
-        const data = await getTripPreviewAction(fromParam, toParam, vibeParam, budgetParam);
-        setTrip(data);
+        const result = await generateTrip(fromParam, toParam, vibeParam, budgetParam, startParam, endParam);
+        if (result && result.tripId) {
+          router.push(`/dashboard?new=${result.tripId}`);
+        } else {
+          setLoading(false);
+        }
       }
       setLoading(false);
     }

@@ -185,7 +185,7 @@ const TripQuerySchema = z.object({
  * Why it exists: This is the core AI generation feature. It runs securely on the server
  * so API keys and complex generation logic are kept hidden from the client browser.
  */
-export async function getTripPreviewAction(from: string | null, to: string | null, vibe: string | null, budget: string | null) {
+export async function generateTrip(from: string | null, to: string | null, vibe: string | null, budget: string | null, startDate?: string | null, endDate?: string | null) {
   // 1. Production Rate Limiting (Per-User & Per-IP)
   await checkRateLimit();
 
@@ -204,21 +204,99 @@ export async function getTripPreviewAction(from: string | null, to: string | nul
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    if (!user) {
+      throw new Error("You must be logged in to generate and save a trip.");
+    }
+
     // 3. User Quota Protection: Max 50 saved trips to prevent DB bloat
-    if (user) {
-      const { count } = await supabase
-        .from('trips')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-      
-      if ((count || 0) >= 50) {
-        throw new Error("You've reached your maximum limit of 50 saved trips. Please delete some before creating more.");
+    const { count } = await supabase
+      .from('trips')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id);
+    
+    if ((count || 0) >= 50) {
+      throw new Error("You've reached your maximum limit of 50 saved trips. Please delete some before creating more.");
+    }
+
+    // 4. Generate the Trip (AI/Logic)
+    console.log(`[GENERATION] Starting trip generation for ${cleanTo} from ${cleanFrom}...`);
+    const trip = await getTripByRoute(cleanFrom, cleanTo, cleanVibe, cleanBudget);
+
+    // 5. SECURE DATABASE PERSISTENCE
+    // We save the trip in a "transactional" way (sequential inserts as JS doesn't have cross-table transactions easily in this setup)
+    
+    // A) Insert Trip Root
+    const { data: insertedTrip, error: tripError } = await (supabase
+      .from('trips')
+      .insert({
+        user_id: user.id,
+        from_city: trip.from,
+        to_city: trip.to,
+        budget: cleanNumBudget || 0,
+        vibe: cleanVibe || 'balanced',
+        duration: trip.duration,
+        total_price: trip.totalPriceINR,
+        start_date: startDate || new Date().toISOString(),
+      })
+      .select()
+      .single() as any);
+
+    if (tripError || !insertedTrip) {
+      console.error("[DB ERROR] Trip root insert failed:", tripError);
+      throw new Error("Failed to save trip root to database.");
+    }
+
+    // B) Insert Days & Activities
+    for (const day of trip.days) {
+      const { data: insertedDay, error: dayError } = await (supabase
+        .from('itinerary_days')
+        .insert({
+          trip_id: insertedTrip.id,
+          day_number: day.dayNumber,
+          date: day.date,
+          title: day.title,
+          description: day.description,
+          lat: day.location.lat,
+          lng: day.location.lng
+        })
+        .select()
+        .single() as any);
+
+      if (dayError || !insertedDay) {
+        console.error("[DB ERROR] Day insert failed:", dayError);
+        continue; // Try next day or handle more gracefully
+      }
+
+      // C) Insert Activities for this day
+      const activityInserts = day.activities.map(act => ({
+        day_id: insertedDay.id,
+        time: act.time,
+        title: act.title,
+        description: act.description,
+        type: act.type,
+        lat: act.location?.lat || insertedDay.lat,
+        lng: act.location?.lng || insertedDay.lng,
+        price_inr: act.priceINR
+      }));
+
+      const { error: actError } = await supabase
+        .from('activities')
+        .insert(activityInserts);
+
+      if (actError) {
+        console.error("[DB ERROR] Activities insert failed:", actError);
       }
     }
-    const trip = await getTripByRoute(cleanFrom, cleanTo, cleanVibe, cleanBudget);
-    return trip;
+
+    console.log(`[GENERATION] Successfully saved trip ${insertedTrip.id} for user ${user.id}`);
+    
+    // 6. REVALIDATE AND RETURN
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath("/dashboard");
+    
+    return { success: true, tripId: insertedTrip.id };
   } catch (err) {
-    console.error("Error in getTripPreviewAction:", err);
-    throw new Error("Failed to generate trip itinerary.");
+    console.error("Error in generateTrip:", err);
+    throw new Error(err instanceof Error ? err.message : "Failed to generate trip itinerary.");
   }
 }

@@ -140,3 +140,21 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* react-day-picker custom styling */
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: #3b82f6;
+  --rdp-background-color: #1d4ed8;
+  --rdp-accent-color-foreground: white;
+  margin: 0;
+}
+
+.rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
+  background-color: var(--rdp-accent-color);
+  color: var(--rdp-accent-color-foreground);
+}
+
+.rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
