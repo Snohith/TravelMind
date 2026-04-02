@@ -1,10 +1,10 @@
 "use server";
 
-import { createClient } from "@/lib/supabase-server";
 import { getTripByRoute, type Trip } from "@/data/mock-itinerary";
+import { createClient } from "@/lib/supabase-server";
 import { Database } from "@/types/supabase";
-import { z } from "zod";
 import { headers } from "next/headers";
+import { z } from "zod";
 
 type TripInsert = Database['public']['Tables']['trips']['Insert'];
 type DayInsert = Database['public']['Tables']['itinerary_days']['Insert'];
@@ -86,7 +86,6 @@ export async function getUserTrips(page: number = 1, limit: number = 9) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    console.error("Attempted to fetch trips without a session.");
     return { data: [], count: 0 };
   }
 
@@ -101,7 +100,6 @@ export async function getUserTrips(page: number = 1, limit: number = 9) {
     .range(from, to) as any);
 
   if (error) {
-    console.error("Error fetching user trips:", error);
     return { data: [], count: 0 };
   }
 
@@ -126,7 +124,6 @@ export async function deleteTrip(tripId: string) {
     .eq('user_id', user.id) as any);
 
   if (error) {
-    console.error("Error deleting trip:", error);
     throw new Error(error.message);
   }
   return true;
@@ -158,7 +155,6 @@ async function checkRateLimit() {
   }
 
   if (entry.count >= limit) {
-    console.warn(`[SECURITY] Rate limit triggered for ${identifier}`);
     throw new Error(`Too many requests. Please wait a minute. (${limit} requests/min allowed)`);
   }
 
@@ -193,7 +189,6 @@ export async function generateTrip(from: string | null, to: string | null, vibe:
   const validation = TripQuerySchema.safeParse({ from, to, vibe, budget });
   
   if (!validation.success) {
-    console.error("[SECURITY] Invalid input detected:", validation.error.format());
     throw new Error("Parameters are outside safe travel limits. Please check your inputs.");
   }
 
@@ -219,7 +214,6 @@ export async function generateTrip(from: string | null, to: string | null, vibe:
     }
 
     // 4. Generate the Trip (AI/Logic)
-    console.log(`[GENERATION] Starting trip generation for ${cleanTo} from ${cleanFrom}...`);
     const trip = await getTripByRoute(cleanFrom, cleanTo, cleanVibe, cleanBudget);
 
     // 5. SECURE DATABASE PERSISTENCE
@@ -242,7 +236,6 @@ export async function generateTrip(from: string | null, to: string | null, vibe:
       .single() as any);
 
     if (tripError || !insertedTrip) {
-      console.error("[DB ERROR] Trip root insert failed:", tripError);
       throw new Error("Failed to save trip root to database.");
     }
 
@@ -263,7 +256,6 @@ export async function generateTrip(from: string | null, to: string | null, vibe:
         .single() as any);
 
       if (dayError || !insertedDay) {
-        console.error("[DB ERROR] Day insert failed:", dayError);
         continue; // Try next day or handle more gracefully
       }
 
@@ -284,19 +276,14 @@ export async function generateTrip(from: string | null, to: string | null, vibe:
         .insert(activityInserts);
 
       if (actError) {
-        console.error("[DB ERROR] Activities insert failed:", actError);
       }
     }
-
-    console.log(`[GENERATION] Successfully saved trip ${insertedTrip.id} for user ${user.id}`);
-    
     // 6. REVALIDATE AND RETURN
     const { revalidatePath } = await import("next/cache");
     revalidatePath("/dashboard");
     
     return { success: true, tripId: insertedTrip.id };
   } catch (err) {
-    console.error("Error in generateTrip:", err);
     throw new Error(err instanceof Error ? err.message : "Failed to generate trip itinerary.");
   }
 }

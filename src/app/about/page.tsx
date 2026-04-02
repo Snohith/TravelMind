@@ -1,5 +1,5 @@
+import { ArrowLeft, Target, Users } from "lucide-react";
 import Link from "next/link";
-import { ArrowLeft, Target, Users, Landmark } from "lucide-react";
 
 export default function AboutPage() {
   return (

@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { BouncingDots } from "@/components/ui/Loader";
 import { useAuth } from "@/context/auth-context";
+import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
-import { BouncingDots } from "@/components/ui/Loader";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { Suspense, useEffect, useState } from "react";
 
 function LoginForm() {
   const { user, isLoaded } = useAuth();

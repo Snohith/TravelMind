@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { BouncingDots } from "@/components/ui/Loader";
+import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
-import { BouncingDots } from "@/components/ui/Loader";
 import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 
 export default function UpdatePasswordPage() {
   const router = useRouter();

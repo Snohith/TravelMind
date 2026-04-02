@@ -22,7 +22,6 @@ export async function registerNewSession() {
     .eq('id', user.id);
 
   if (error) {
-    console.error("Error registering new session:", error);
     return null;
   }
 

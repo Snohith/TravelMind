@@ -1,9 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { registerNewSession, validateSession } from "@/app/actions/auth";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
-import { registerNewSession, validateSession } from "@/app/actions/auth";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
   user: User | null;
@@ -73,7 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const { isValid } = await validateSession(localId);
       if (!isValid) {
-        console.warn("[AUTH] Session invalidated by another login.");
         await signOut();
         window.location.href = "/login?error=session-conflict";
       }

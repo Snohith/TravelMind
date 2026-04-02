@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/context/auth-context";
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { supabase } from "@/lib/supabase";
-import { User, Mail, Lock, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { BouncingDots } from "@/components/ui/Loader";
+import { useAuth } from "@/context/auth-context";
+import { supabase } from "@/lib/supabase";
+import { motion } from "framer-motion";
+import { CheckCircle2, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { Suspense, useEffect, useState } from "react";
 
 function SignupForm() {
   const { user, isLoaded } = useAuth();

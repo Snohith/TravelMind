@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ArrowLeft, Clock } from "lucide-react";
+import Link from "next/link";
 
 export default function PrivacyPage() {
   const sections = [

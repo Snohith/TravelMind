@@ -1,5 +1,5 @@
+import { ArrowLeft, FileText, HelpCircle, MessageCircle, Phone, Search } from "lucide-react";
 import Link from "next/link";
-import { ArrowLeft, Search, HelpCircle, MessageCircle, FileText, Phone } from "lucide-react";
 
 export default function HelpPage() {
   const helpCategories = [

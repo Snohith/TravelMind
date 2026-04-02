@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ArrowLeft, Download, FileText, ImageIcon, Mail } from "lucide-react";
+import Link from "next/link";
 
 export default function PressPage() {
   const assets = [

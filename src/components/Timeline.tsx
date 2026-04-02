@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-import Image from "next/image";
-import { ItineraryDay, Activity } from "@/data/mock-itinerary";
-import { motion } from "framer-motion";
-import { Utensils, Camera, Train, MapPin, Bed, IndianRupee, Sun, Cloud, CloudRain, Droplets, Snowflake } from "lucide-react";
+import { Activity, ItineraryDay } from "@/data/mock-itinerary";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { Bed, Camera, Cloud, CloudRain, Droplets, IndianRupee, MapPin, Snowflake, Sun, Train, Utensils } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useRef } from "react";
 
-import PackingList from "./PackingList";
-import LocalFoodGuide from "./LocalFoodGuide";
 import { Delicacy } from "@/data/mock-itinerary";
+import LocalFoodGuide from "./LocalFoodGuide";
+import PackingList from "./PackingList";
 
 interface TimelineProps {
   itinerary: ItineraryDay[];

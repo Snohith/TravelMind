@@ -1,8 +1,6 @@
 "use client";
 
-import React from "react";
-import { CheckCircle2, Briefcase, Sun, CloudRain, ShieldCheck, Zap } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Briefcase, CheckCircle2, ShieldCheck, Zap } from "lucide-react";
 
 interface PackingListProps {
   vibe?: string;

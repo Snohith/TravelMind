@@ -1,6 +1,6 @@
-import Link from "next/link";
+import { ArrowLeft, ArrowRight, Calendar, Clock } from "lucide-react";
 import Image from "next/image";
-import { ArrowLeft, Clock, Calendar, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const blogPosts = [
   {

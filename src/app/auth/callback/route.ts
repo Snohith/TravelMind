@@ -1,6 +1,5 @@
-import { NextResponse } from "next/server";
-import { type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase-server";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -11,7 +10,6 @@ export async function GET(request: NextRequest) {
   // SECURITY: Prevent Open Redirect attacks
   // Only allow relative paths starting with /
   if (!redirect.startsWith("/") || redirect.includes("//")) {
-    console.warn("[SECURITY] Blocked potentially malicious redirect:", redirect);
     redirect = "/";
   }
 
@@ -21,11 +19,9 @@ export async function GET(request: NextRequest) {
       const { error } = await supabase.auth.exchangeCodeForSession(code);
       
       if (error) {
-        console.error("[SECURITY] Auth code exchange failed:", error.message);
         return NextResponse.redirect(new URL("/login?error=auth-failure", request.url));
       }
     } catch (err) {
-      console.error("[SECURITY] Unexpected error during code exchange:", err);
       return NextResponse.redirect(new URL("/login?error=server-error", request.url));
     }
   }

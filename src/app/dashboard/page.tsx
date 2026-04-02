@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { deleteTrip, getUserTrips } from "@/app/actions/trips";
 import { useAuth } from "@/context/auth-context";
-import { getUserTrips, deleteTrip } from "@/app/actions/trips";
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { Calendar, MapPin, ArrowRight, Trash2, Plus } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ArrowRight, Calendar, MapPin, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
   const { user, isLoaded } = useAuth();
@@ -44,7 +43,6 @@ export default function DashboardPage() {
       await deleteTrip(tripId);
       setTrips(prev => prev.filter(t => t.id !== tripId));
     } catch (err) {
-      console.error("Delete failed:", err);
       alert("Failed to delete trip. Please try again.");
     }
   }
@@ -59,7 +57,6 @@ export default function DashboardPage() {
       setHasMore(newTrips.length < count);
       setPage(p => p + 1);
     } catch (err) {
-      console.error("Failed to load more:", err);
     } finally {
       setLoadingMore(false);
     }

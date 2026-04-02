@@ -1,5 +1,5 @@
+import { ArrowLeft, Briefcase, Globe, MapPin, PlusCircle, TrendingUp } from "lucide-react";
 import Link from "next/link";
-import { ArrowLeft, MapPin, Search, PlusCircle, Briefcase, Globe, TrendingUp } from "lucide-react";
 
 export default function CareersPage() {
   const openRoles = [

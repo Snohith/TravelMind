@@ -1,19 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, MapPin, Users, Sparkles, IndianRupee, Calendar as CalendarIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/auth-context";
 import { BouncingDots } from "@/components/ui/Loader";
 import { Button } from "@/components/ui/button";
-import { useForm, Controller } from "react-hook-form";
+import { useAuth } from "@/context/auth-context";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { DayPicker, DateRange } from "react-day-picker";
-import "react-day-picker/dist/style.css";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
+import { Calendar as CalendarIcon, ChevronDown, IndianRupee, MapPin, Sparkles, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { DateRange, DayPicker } from "react-day-picker";
+import "react-day-picker/dist/style.css";
+import { Controller, useForm } from "react-hook-form";
+import * as z from "zod";
 
 const searchSchema = z.object({
   from: z.string().min(2, "Select origin"),
@@ -92,7 +91,6 @@ export default function SearchForm() {
       });
       router.push(`/itinerary?${params.toString()}`);
     } catch (error) {
-      console.error("Selection error:", error);
     } finally {
       setIsGenerating(false);
     }

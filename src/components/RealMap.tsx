@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 import { ItineraryDay } from "@/data/mock-itinerary";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { useEffect, useMemo } from "react";
+import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
 
 // Custom Icon for Active vs Inactive Days
 const createCustomIcon = (isActive: boolean, dayNumber: number) => {

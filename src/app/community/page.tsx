@@ -1,6 +1,6 @@
-import Link from "next/link";
+import { ArrowLeft, Compass, Heart, MessageSquare, Share2 } from "lucide-react";
 import Image from "next/image";
-import { ArrowLeft, MessageSquare, Compass, Heart, Share2 } from "lucide-react";
+import Link from "next/link";
 
 export default function CommunityPage() {
   const communityStats = [

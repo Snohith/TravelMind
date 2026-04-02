@@ -1,9 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
-import Image from "next/image";
-import { Utensils, Info } from "lucide-react";
 import { Delicacy } from "@/data/mock-itinerary";
+import { motion } from "framer-motion";
+import { Info, Utensils } from "lucide-react";
+import Image from "next/image";
 
 interface FoodGuideProps {
   delicacies: Delicacy[];

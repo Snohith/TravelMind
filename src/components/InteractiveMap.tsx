@@ -1,7 +1,7 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { ItineraryDay } from "@/data/mock-itinerary";
+import dynamic from "next/dynamic";
 
 // Dynamically import the RealMap component, disabling SSR
 // This is required because Leaflet relies on the `window` object which is not available on the server.
