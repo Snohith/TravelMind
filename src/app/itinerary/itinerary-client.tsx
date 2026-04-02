@@ -45,10 +45,16 @@ function ItineraryContent() {
       try {
         if (tripId) {
           const data = await getTripById(tripId);
-          setTrip(data);
+          if (data && 'error' in data) {
+            setError(data.error as string);
+          } else {
+            setTrip(data as any);
+          }
         } else {
           const result = await generateTrip(fromParam, toParam, vibeParam, budgetParam, startParam, endParam);
-          if (result && result.tripId) {
+          if (result && 'error' in result) {
+            setError(result.error as string);
+          } else if (result && result.tripId) {
             router.push(`/dashboard?new=${result.tripId}`);
             return;
           }

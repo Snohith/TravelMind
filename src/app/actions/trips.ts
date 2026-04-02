@@ -24,7 +24,7 @@ export async function getTripById(tripId: string) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("Authentication required to access trip details.");
+    return { error: "Authentication required to access trip details." };
   }
 
   const { data: trip, error } = await (supabase
@@ -40,7 +40,7 @@ export async function getTripById(tripId: string) {
     .eq('user_id', user.id) // IMPORTANT: ONLY fetch if it belongs to THIS user
     .single() as any);
 
-  if (error || !trip) return null;
+  if (error || !trip) return { error: "Trip not found." };
   
   // Map back to Trip interface
   const mappedTrip: Trip = {
@@ -155,10 +155,11 @@ async function checkRateLimit() {
   }
 
   if (entry.count >= limit) {
-    throw new Error(`Too many requests. Please wait a minute. (${limit} requests/min allowed)`);
+    return { error: `Too many requests. Please wait a minute. (${limit} requests/min allowed)` };
   }
 
   entry.count++;
+  return null;
 }
 
 // Zod schema for input validation
@@ -183,13 +184,16 @@ const TripQuerySchema = z.object({
  */
 export async function generateTrip(from: string | null, to: string | null, vibe: string | null, budget: string | null, startDate?: string | null, endDate?: string | null) {
   // 1. Production Rate Limiting (Per-User & Per-IP)
-  await checkRateLimit();
+  const rateLimitError = await checkRateLimit();
+  if (rateLimitError && rateLimitError.error) {
+    return { error: rateLimitError.error };
+  }
 
   // 2. Production Schema Validation (Zod)
   const validation = TripQuerySchema.safeParse({ from, to, vibe, budget });
   
   if (!validation.success) {
-    throw new Error("Parameters are outside safe travel limits. Please check your inputs.");
+    return { error: "Parameters are outside safe travel limits. Please check your inputs." };
   }
 
   const { from: cleanFrom, to: cleanTo, vibe: cleanVibe, budget: cleanNumBudget } = validation.data;
@@ -200,7 +204,7 @@ export async function generateTrip(from: string | null, to: string | null, vibe:
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      throw new Error("You must be logged in to generate and save a trip.");
+      return { error: "You must be logged in to generate and save a trip." };
     }
 
     // 3. User Quota Protection: Max 50 saved trips to prevent DB bloat
@@ -210,7 +214,7 @@ export async function generateTrip(from: string | null, to: string | null, vibe:
       .eq('user_id', user.id);
     
     if ((count || 0) >= 50) {
-      throw new Error("You've reached your maximum limit of 50 saved trips. Please delete some before creating more.");
+      return { error: "You've reached your maximum limit of 50 saved trips. Please delete some before creating more." };
     }
 
     // 4. Generate the Trip (AI/Logic)
@@ -236,7 +240,7 @@ export async function generateTrip(from: string | null, to: string | null, vibe:
       .single() as any);
 
     if (tripError || !insertedTrip) {
-      throw new Error("Failed to save trip root to database.");
+      return { error: "Failed to save trip root to database." };
     }
 
     // B) Insert Days & Activities
@@ -284,6 +288,6 @@ export async function generateTrip(from: string | null, to: string | null, vibe:
     
     return { success: true, tripId: insertedTrip.id };
   } catch (err) {
-    throw new Error(err instanceof Error ? err.message : "Failed to generate trip itinerary.");
+    return { error: err instanceof Error ? err.message : "Failed to generate trip itinerary." };
   }
 }
