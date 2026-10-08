@@ -22,7 +22,7 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: maven
       - run: mvn -q verify
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: matrix.java == '17'
         with:
           name: travelmind-backend
