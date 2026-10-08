@@ -1,0 +1,29 @@
+name: backend
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: ['17', '21']
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - run: mvn -q verify
+      - uses: actions/upload-artifact@v4
+        if: matrix.java == '17'
+        with:
+          name: travelmind-backend
+          path: backend/target/travelmind-backend-*.jar

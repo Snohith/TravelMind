@@ -1,0 +1,7 @@
+target/
+.git/
+.data/
+*.log
+Dockerfile
+docker-compose.yml
+README.md

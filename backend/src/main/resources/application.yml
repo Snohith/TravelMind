@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: travelmind-backend
+  datasource:
+    # File-backed H2 so trips survive restarts without running Postgres.
+    # Swap url/driver for postgres when the frontend needs sharing (see ADR-0001).
+    url: jdbc:h2:file:./.data/travelmind;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate.format_sql: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # health + info only. Never env/dump without auth in front.
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+info:
+  app:
+    name: travelmind-backend
+    version: 1.0.1

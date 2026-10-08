@@ -1,0 +1,70 @@
+import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "TravelMind | Design your Perfect AI-Powered Trip",
+  description: "TravelMind is an AI-Powered destination-based trip planner. Generate custom itineraries, explore hidden gems, and organize your perfect journey in seconds.",
+  keywords: ["travel planner", "AI travel", "itinerary maker", "trip designer", "travel community"],
+  authors: [{ name: "TravelMind Team" }],
+  openGraph: {
+    title: "TravelMind | Design your Perfect Trip",
+    description: "Design, organize, and experience the perfect trip with AI-powered itineraries.",
+    url: "https://travelmind.ai",
+    siteName: "TravelMind",
+    images: [{ url: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=1200", width: 1200, height: 630 }],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TravelMind | Design your Perfect Trip",
+    description: "Design, organize, and experience the perfect trip with AI-powered itineraries.",
+    images: ["https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=1200"],
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        {/* Tell Dark Reader the page is already dark so it won't inject inline styles */}
+        <meta name="color-scheme" content="dark" />
+        {/* Early connections for the three remote-image hosts. Saves a DNS +
+            TLS round trip per host on image-heavy pages (timeline, food, map).
+            Harmless if a host goes unused on a given page. */}
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="preconnect" href="https://picsum.photos" />
+        <link rel="preconnect" href="https://tile.openstreetmap.org" />
+      </head>
+      <body
+        suppressHydrationWarning
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white min-h-screen overflow-x-hidden flex flex-col`}
+      >
+        <ServiceWorkerRegister />
+        <Navbar />
+        <main className="relative z-0 flex-grow">
+          {children}
+        </main>
+        <Footer />
+      </body>
+    </html>
+  );
+}

@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    # Throwaway DB per test run — a shared file would leak trips between tests
+    # and turn creates into 409s.
+    url: jdbc:h2:mem:travelmind-test;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
